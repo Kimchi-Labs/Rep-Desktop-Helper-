@@ -12,6 +12,8 @@ struct RepDesktopAppApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
-        }
+              
+        }.windowResizability(.contentSize)
+            .windowStyle(.hiddenTitleBar)
     }
 }

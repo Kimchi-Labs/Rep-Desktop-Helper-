@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		B2F6C9FB2FF9E23000EE30B2 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = B2F6C9FA2FF9E23000EE30B2 /* Supabase */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		B2F6C9CB2FF959E400EE30B2 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -24,25 +28,15 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		B2F6C9BD2FF959E300EE30B2 /* RepDesktopApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RepDesktopApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		B2F6C9CA2FF959E400EE30B2 /* RepDesktopAppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RepDesktopAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		B2F6C9D42FF959E400EE30B2 /* RepDesktopAppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RepDesktopAppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		B2F6C9BD2FF959E300EE30B2 /* RepDesktopHelper.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RepDesktopHelper.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		B2F6C9CA2FF959E400EE30B2 /* RepDesktopHelperTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RepDesktopHelperTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		B2F6C9D42FF959E400EE30B2 /* RepDesktopHelperUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RepDesktopHelperUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		B2F6C9BF2FF959E300EE30B2 /* RepDesktopApp */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = RepDesktopApp;
-			sourceTree = "<group>";
-		};
-		B2F6C9CD2FF959E400EE30B2 /* RepDesktopAppTests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = RepDesktopAppTests;
-			sourceTree = "<group>";
-		};
-		B2F6C9D72FF959E400EE30B2 /* RepDesktopAppUITests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = RepDesktopAppUITests;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -52,6 +46,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B2F6C9FB2FF9E23000EE30B2 /* Supabase in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -76,8 +71,7 @@
 			isa = PBXGroup;
 			children = (
 				B2F6C9BF2FF959E300EE30B2 /* RepDesktopApp */,
-				B2F6C9CD2FF959E400EE30B2 /* RepDesktopAppTests */,
-				B2F6C9D72FF959E400EE30B2 /* RepDesktopAppUITests */,
+				B2F6C9F62FF9E20200EE30B2 /* Frameworks */,
 				B2F6C9BE2FF959E300EE30B2 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -85,19 +79,26 @@
 		B2F6C9BE2FF959E300EE30B2 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				B2F6C9BD2FF959E300EE30B2 /* RepDesktopApp.app */,
-				B2F6C9CA2FF959E400EE30B2 /* RepDesktopAppTests.xctest */,
-				B2F6C9D42FF959E400EE30B2 /* RepDesktopAppUITests.xctest */,
+				B2F6C9BD2FF959E300EE30B2 /* RepDesktopHelper.app */,
+				B2F6C9CA2FF959E400EE30B2 /* RepDesktopHelperTests.xctest */,
+				B2F6C9D42FF959E400EE30B2 /* RepDesktopHelperUITests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		B2F6C9F62FF9E20200EE30B2 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		B2F6C9BC2FF959E300EE30B2 /* RepDesktopApp */ = {
+		B2F6C9BC2FF959E300EE30B2 /* RepDesktopHelper */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = B2F6C9DE2FF959E400EE30B2 /* Build configuration list for PBXNativeTarget "RepDesktopApp" */;
+			buildConfigurationList = B2F6C9DE2FF959E400EE30B2 /* Build configuration list for PBXNativeTarget "RepDesktopHelper" */;
 			buildPhases = (
 				B2F6C9B92FF959E300EE30B2 /* Sources */,
 				B2F6C9BA2FF959E300EE30B2 /* Frameworks */,
@@ -110,16 +111,17 @@
 			fileSystemSynchronizedGroups = (
 				B2F6C9BF2FF959E300EE30B2 /* RepDesktopApp */,
 			);
-			name = RepDesktopApp;
+			name = RepDesktopHelper;
 			packageProductDependencies = (
+				B2F6C9FA2FF9E23000EE30B2 /* Supabase */,
 			);
 			productName = RepDesktopApp;
-			productReference = B2F6C9BD2FF959E300EE30B2 /* RepDesktopApp.app */;
+			productReference = B2F6C9BD2FF959E300EE30B2 /* RepDesktopHelper.app */;
 			productType = "com.apple.product-type.application";
 		};
-		B2F6C9C92FF959E400EE30B2 /* RepDesktopAppTests */ = {
+		B2F6C9C92FF959E400EE30B2 /* RepDesktopHelperTests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = B2F6C9E12FF959E400EE30B2 /* Build configuration list for PBXNativeTarget "RepDesktopAppTests" */;
+			buildConfigurationList = B2F6C9E12FF959E400EE30B2 /* Build configuration list for PBXNativeTarget "RepDesktopHelperTests" */;
 			buildPhases = (
 				B2F6C9C62FF959E400EE30B2 /* Sources */,
 				B2F6C9C72FF959E400EE30B2 /* Frameworks */,
@@ -130,19 +132,16 @@
 			dependencies = (
 				B2F6C9CC2FF959E400EE30B2 /* PBXTargetDependency */,
 			);
-			fileSystemSynchronizedGroups = (
-				B2F6C9CD2FF959E400EE30B2 /* RepDesktopAppTests */,
-			);
-			name = RepDesktopAppTests;
+			name = RepDesktopHelperTests;
 			packageProductDependencies = (
 			);
 			productName = RepDesktopAppTests;
-			productReference = B2F6C9CA2FF959E400EE30B2 /* RepDesktopAppTests.xctest */;
+			productReference = B2F6C9CA2FF959E400EE30B2 /* RepDesktopHelperTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		B2F6C9D32FF959E400EE30B2 /* RepDesktopAppUITests */ = {
+		B2F6C9D32FF959E400EE30B2 /* RepDesktopHelperUITests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = B2F6C9E42FF959E400EE30B2 /* Build configuration list for PBXNativeTarget "RepDesktopAppUITests" */;
+			buildConfigurationList = B2F6C9E42FF959E400EE30B2 /* Build configuration list for PBXNativeTarget "RepDesktopHelperUITests" */;
 			buildPhases = (
 				B2F6C9D02FF959E400EE30B2 /* Sources */,
 				B2F6C9D12FF959E400EE30B2 /* Frameworks */,
@@ -153,14 +152,11 @@
 			dependencies = (
 				B2F6C9D62FF959E400EE30B2 /* PBXTargetDependency */,
 			);
-			fileSystemSynchronizedGroups = (
-				B2F6C9D72FF959E400EE30B2 /* RepDesktopAppUITests */,
-			);
-			name = RepDesktopAppUITests;
+			name = RepDesktopHelperUITests;
 			packageProductDependencies = (
 			);
 			productName = RepDesktopAppUITests;
-			productReference = B2F6C9D42FF959E400EE30B2 /* RepDesktopAppUITests.xctest */;
+			productReference = B2F6C9D42FF959E400EE30B2 /* RepDesktopHelperUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 /* End PBXNativeTarget section */
@@ -186,7 +182,7 @@
 					};
 				};
 			};
-			buildConfigurationList = B2F6C9B82FF959E300EE30B2 /* Build configuration list for PBXProject "RepDesktopApp" */;
+			buildConfigurationList = B2F6C9B82FF959E300EE30B2 /* Build configuration list for PBXProject "RepDesktopHelper" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -195,14 +191,17 @@
 			);
 			mainGroup = B2F6C9B42FF959E300EE30B2;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				B2F6C9F92FF9E22000EE30B2 /* XCRemoteSwiftPackageReference "supabase-swift" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = B2F6C9BE2FF959E300EE30B2 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				B2F6C9BC2FF959E300EE30B2 /* RepDesktopApp */,
-				B2F6C9C92FF959E400EE30B2 /* RepDesktopAppTests */,
-				B2F6C9D32FF959E400EE30B2 /* RepDesktopAppUITests */,
+				B2F6C9BC2FF959E300EE30B2 /* RepDesktopHelper */,
+				B2F6C9C92FF959E400EE30B2 /* RepDesktopHelperTests */,
+				B2F6C9D32FF959E400EE30B2 /* RepDesktopHelperUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -258,12 +257,12 @@
 /* Begin PBXTargetDependency section */
 		B2F6C9CC2FF959E400EE30B2 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = B2F6C9BC2FF959E300EE30B2 /* RepDesktopApp */;
+			target = B2F6C9BC2FF959E300EE30B2 /* RepDesktopHelper */;
 			targetProxy = B2F6C9CB2FF959E400EE30B2 /* PBXContainerItemProxy */;
 		};
 		B2F6C9D62FF959E400EE30B2 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = B2F6C9BC2FF959E300EE30B2 /* RepDesktopApp */;
+			target = B2F6C9BC2FF959E300EE30B2 /* RepDesktopHelper */;
 			targetProxy = B2F6C9D52FF959E400EE30B2 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -470,7 +469,7 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/RepDesktopApp.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/RepDesktopApp";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/RepDesktopHelper.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/RepDesktopHelper";
 			};
 			name = Debug;
 		};
@@ -491,7 +490,7 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/RepDesktopApp.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/RepDesktopApp";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/RepDesktopHelper.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/RepDesktopHelper";
 			};
 			name = Release;
 		};
@@ -536,7 +535,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		B2F6C9B82FF959E300EE30B2 /* Build configuration list for PBXProject "RepDesktopApp" */ = {
+		B2F6C9B82FF959E300EE30B2 /* Build configuration list for PBXProject "RepDesktopHelper" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				B2F6C9DC2FF959E400EE30B2 /* Debug */,
@@ -545,7 +544,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		B2F6C9DE2FF959E400EE30B2 /* Build configuration list for PBXNativeTarget "RepDesktopApp" */ = {
+		B2F6C9DE2FF959E400EE30B2 /* Build configuration list for PBXNativeTarget "RepDesktopHelper" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				B2F6C9DF2FF959E400EE30B2 /* Debug */,
@@ -554,7 +553,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		B2F6C9E12FF959E400EE30B2 /* Build configuration list for PBXNativeTarget "RepDesktopAppTests" */ = {
+		B2F6C9E12FF959E400EE30B2 /* Build configuration list for PBXNativeTarget "RepDesktopHelperTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				B2F6C9E22FF959E400EE30B2 /* Debug */,
@@ -563,7 +562,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		B2F6C9E42FF959E400EE30B2 /* Build configuration list for PBXNativeTarget "RepDesktopAppUITests" */ = {
+		B2F6C9E42FF959E400EE30B2 /* Build configuration list for PBXNativeTarget "RepDesktopHelperUITests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				B2F6C9E52FF959E400EE30B2 /* Debug */,
@@ -573,6 +572,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		B2F6C9F92FF9E22000EE30B2 /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/supabase/supabase-swift.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.5.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		B2F6C9FA2FF9E23000EE30B2 /* Supabase */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B2F6C9F92FF9E22000EE30B2 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Supabase;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = B2F6C9B52FF959E300EE30B2 /* Project object */;
 }
