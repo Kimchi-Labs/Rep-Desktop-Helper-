@@ -9,8 +9,11 @@ import Supabase
 import CryptoKit
 
 
+private let authOptions = SupabaseClientOptions.AuthOptions(storage: KeychainLocalStorage(service: "kimchilabs.rep.RepDesktopApp"), emitLocalSessionAsInitialSession: true)
+private let clientOptions = SupabaseClientOptions(auth: authOptions)
+
 let supabaseDBClient: SupabaseClient = SupabaseClient(supabaseURL: URL(string: "https://oxgumwqxnghqccazzqvw.supabase.co")!,
-                                                      supabaseKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im94Z3Vtd3F4bmdocWNjYXp6cXZ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc0MTE0MjQsImV4cCI6MjA2Mjk4NzQyNH0.gt_S5p_sGgAEN1fJSPYIKEpDMMvo3PNx-pnhlC_2fKQ")
+                                                      supabaseKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im94Z3Vtd3F4bmdocWNjYXp6cXZ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc0MTE0MjQsImV4cCI6MjA2Mjk4NzQyNH0.gt_S5p_sGgAEN1fJSPYIKEpDMMvo3PNx-pnhlC_2fKQ", options: clientOptions)
 
 //public struct PushToSupabaseNotion: Encodable {
 //    let token: String

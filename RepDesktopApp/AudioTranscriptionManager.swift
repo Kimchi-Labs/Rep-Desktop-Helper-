@@ -5,6 +5,20 @@
 //  Created by alex haidar on 7/4/26.
 //
 
+// startAudioStream()
+//   ├─ transcriptionEventListener()
+//   │    └─ extractTranscriptionResponseDelta()
+//   │         └─ decodeTranscriptionResponse()
+//   └─ startMicCapture()
+//        └─ (audio tap callback)
+//             └─ sendAudioChunk()
+
+// stopAudioStream()
+//   ├─ commitAudioChunk()
+//   ├─ (wait loop for finishedTranscript)
+//   └─ summarizeFinishedTranscript()
+//        └─ onChunk(...)  
+
 /* All requests to the supabase edge functions for the Voice
  transcription with gpt-4o-mini-transcribe or future models will be handled here  */
 import Foundation
@@ -32,25 +46,6 @@ public final class AudioTranscriptionManager: ObservableObject {
     @Published var audioLevels: CGFloat = 0
     @Published var summarizedNotes: String = ""
     @Published var didStopAudioStream: Bool = false
-    
-    
-    func configAudioSession() throws {
-#if os(iOS) || os(tvOS) || targetEnvironment(macCatalyst)
-        do {
-            let audioSession = AVAudioSession.sharedInstance()
-            try audioSession.setCategory(.playAndRecord, mode: .voiceChat, options: [.allowBluetoothHFP, .defaultToSpeaker])
-            try audioSession.setPreferredInputNumberOfChannels(1)
-            try audioSession.setActive(true)
-            print("audio session successfully set up")
-        } catch {
-            print("failed to config audio session", ErrorDesc.configError, error)
-        }
-#elseif os(macOS)
-        // AVAudioSession is unavailable on macOS; AVAudioEngine will use the system default devices.
-        // If device/channel selection is needed, use Core Audio (AudioObject) APIs.
-        print("macOS: using default audio input/output; no AVAudioSession configuration required")
-#endif
-    }
     
     
     private let audioEngine = AVAudioEngine()
@@ -94,10 +89,13 @@ public final class AudioTranscriptionManager: ObservableObject {
     
     public func openAudioSession() async throws -> AudioSession.SessionData {
         
-        let url: URL = URL(string: "https://oxgumwqxnghqccazzqvw.supabase.co/functions/v1/ai_summerizer-chat-dev")!  //TODO: change back to prod endpoint after edge function is in prod
+        let url: URL = URL(string: "https://oxgumwqxnghqccazzqvw.supabase.co/functions/v1/ai_summerizer-chat-dev")!  //TODO: change back to prod endpoint
         var urlRequest: URLRequest = URLRequest(url: url)
         
         let session = try await supabaseDBClient.auth.session
+        print(session.isExpired)
+        guard !session.isExpired else { throw ErrorDesc.sessionError }
+        
         let supabaseAccessToken: String = session.accessToken
         guard !supabaseAccessToken.isEmpty else { throw ErrorDesc.authTokenError }
         
@@ -164,8 +162,7 @@ public final class AudioTranscriptionManager: ObservableObject {
             Task {
                 try await transcriptionEventListener(urlRequest: urlRequest)
             }
-            
-            try configAudioSession()
+        
             try startMicCapture()
             
         } catch {

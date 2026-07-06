@@ -6,13 +6,19 @@
 //
 
 import SwiftUI
+import SwiftData
 
 
 struct ContentView: View {
     @Environment(\.dismiss) var dismissDesktop
+    @Environment(\.modelContext) private var context
+    
     @State var audioLevel: Float = 0
     @State var isRecording: Bool = false
     @State var isPaused: Bool = false
+    @State private var streamingText: String = ""
+    
+    @StateObject var audioManager = AudioTranscriptionManager.shared
     
     var body: some View {
         VStack {
@@ -55,18 +61,26 @@ struct ContentView: View {
                         Text("Finished notes will appear in Rep on your\niPhone when you end this transcription.").font(.system(size: 14, design: .rounded)).fontWeight(.medium).opacity(0.5)
                             .padding(.leading, 3)
                         
-                        
                         Spacer()
-                        
                         Waveform(audioLevel: 0.0, isRecording: isRecording, isPaused: isPaused)
                             .padding(.trailing, 3)
                     }
                     
                     Button {
-                        isRecording.toggle()
+                        audioManager.isTranscribing.toggle()
+                        Task {
+                            if audioManager.isTranscribing {
+                                let session = try await audioManager.openAudioSession()
+                                try await audioManager.startAudioStream(session: session)
+                            } else {
+                                try await audioManager.stopAudioStream(context: context) { delta in
+                                    streamingText += delta
+                                }
+                            }
+                        }
                     } label: {
                         
-                        if isRecording {
+                        if audioManager.isTranscribing {
                             ZStack {
                                 Capsule().frame(width: 150, height: 35)
                                     .foregroundStyle(Color.clear).glassEffect(.regular)
