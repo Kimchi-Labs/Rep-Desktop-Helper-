@@ -70,11 +70,14 @@ struct ContentView: View {
                         audioManager.isTranscribing.toggle()
                         Task {
                             if audioManager.isTranscribing {
+                                //let desktopAccessToken = try await AuthenticatePairing.desktopAuthPoller()
                                 let session = try await audioManager.openAudioSession()
                                 try await audioManager.startAudioStream(session: session)
+                                
                             } else {
                                 try await audioManager.stopAudioStream(context: context) { delta in
                                     streamingText += delta
+                                    audioManager.isTranscribing = false
                                 }
                             }
                         }

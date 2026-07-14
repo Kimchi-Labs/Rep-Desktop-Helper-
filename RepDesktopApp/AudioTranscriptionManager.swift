@@ -88,18 +88,16 @@ public final class AudioTranscriptionManager: ObservableObject {
     
     
     public func openAudioSession() async throws -> AudioSession.SessionData {
-        
         let url: URL = URL(string: "https://oxgumwqxnghqccazzqvw.supabase.co/functions/v1/ai_summerizer-chat-dev")!  //TODO: change back to prod endpoint
         var urlRequest: URLRequest = URLRequest(url: url)
         
         let session = try await supabaseDBClient.auth.session
-        print(session.isExpired)
         guard !session.isExpired else { throw ErrorDesc.sessionError }
         
-        let supabaseAccessToken: String = session.accessToken
-        guard !supabaseAccessToken.isEmpty else { throw ErrorDesc.authTokenError }
+        let token: String = session.accessToken
+        guard !token.isEmpty else { throw ErrorDesc.authTokenError }
         
-        urlRequest.setValue("Bearer \(supabaseAccessToken)", forHTTPHeaderField: "Authorization")
+        urlRequest.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         urlRequest.setValue("audio", forHTTPHeaderField: "x-rep-action")
         urlRequest.httpMethod = "POST"
         
@@ -116,7 +114,7 @@ public final class AudioTranscriptionManager: ObservableObject {
             return decodeSession.session
             
         } catch {
-            print("error opening audio session", ErrorDesc.sessionError, error)
+            print("error opening audio session", ErrorDesc.sessionError, error)  //TODO: debug next
         }
         throw ErrorDesc.sessionError
     }

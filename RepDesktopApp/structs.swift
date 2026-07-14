@@ -28,3 +28,14 @@ public struct TranscriptionStream: Decodable {
     let transcript: String?
     
 }
+
+public struct DesktopPairing: Decodable {
+    let desktop_access_token: String?
+    let user_id: String?
+}
+
+
+    /* {
+     "status": "pending"
+   } */
+    

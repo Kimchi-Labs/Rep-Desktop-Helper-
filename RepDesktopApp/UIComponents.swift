@@ -6,6 +6,10 @@
 //
 import SwiftUI
 import Foundation
+import AuthenticationServices
+import CryptoKit
+import AppKit
+import Combine
 
 
 
@@ -42,6 +46,88 @@ struct Waveform: View {
 }
 
 
+struct AuthView: View {
+    @Environment(\.colorScheme) private var colorScheme
+    @State private var currentNonce: String?
+    @StateObject private var auth = AuthBackend()
+    
+    var body: some View {
+        
+        VStack {
+            ZStack {
+                RoundedRectangle(cornerRadius: 30, style: .continuous)
+                    .fill(Color.clear)
+                    .frame(width: 500, height: 180)
+                    .glassEffect(.regular, in: .rect(cornerRadius: 30))
+                
+                VStack(alignment: .center, spacing: 5) {
+                    Text("Sign Into Rep Desktop").foregroundStyle(Color.kimchilabsReversed)
+                        .fontDesign(.default)
+                        .fontWeight(.medium)
+                    
+                    Text("Capture meeting notes on your Mac\nand turn them appear on your iPhone as flashcards").font(.system(size: 12, design: .rounded)).fontWeight(.regular).opacity(0.5)
+                        .multilineTextAlignment(.center)
+                    
+                    
+                    Group {
+                        switch colorScheme {
+                        case .light:
+                            SignInWithAppleButton(.signIn) { request in
+                                let nonce = randomNonceString()
+                                currentNonce = nonce
+
+                                request.requestedScopes = [.fullName, .email]
+                                request.nonce = sha256(nonce)
+                            } onCompletion: { result in
+                                switch result {
+                                case .success(let authorization):
+                                    auth.handleSuccessfulLogin(authorization, nonce: currentNonce)
+
+                                case .failure(let error):
+                                    auth.handleLoginError(with: error)
+                                }
+                            }
+                            .signInWithAppleButtonStyle(.black)
+
+                        case .dark:
+                            SignInWithAppleButton(.signIn) { request in
+                                let nonce = randomNonceString()
+                                currentNonce = nonce
+
+                                request.requestedScopes = [.fullName, .email]
+                                request.nonce = sha256(nonce)
+                            } onCompletion: { result in
+                                switch result {
+                                case .success(let authorization):
+                                    auth.handleSuccessfulLogin(authorization, nonce: currentNonce)
+
+                                case .failure(let error):
+                                    auth.handleLoginError(with: error)
+                                }
+                            }
+                            .signInWithAppleButtonStyle(.white)
+
+                        @unknown default:
+                            EmptyView()
+                        }
+                    }
+                    .frame(width: 190, height: 35)
+                    .clipShape(RoundedRectangle(cornerRadius: 33, style: .continuous))
+                }
+            }
+            
+        }.frame(width: 500, height: 180)
+            .background(WindowConfigurator())
+            .background(Color.kimchilabsBackground)
+            .clipShape(RoundedRectangle(cornerRadius: 30, style: .continuous))
+    }
+}
+
+
 #Preview {
     Waveform(audioLevel: 3.0, isRecording: true, isPaused: false)
+}
+
+#Preview {
+    AuthView()
 }

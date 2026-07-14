@@ -28,6 +28,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		B2924E213005FB7000209D49 /* RepDesktopHelper.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = RepDesktopHelper.entitlements; sourceTree = "<group>"; };
 		B2F6C9BD2FF959E300EE30B2 /* RepDesktopHelper.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RepDesktopHelper.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B2F6C9CA2FF959E400EE30B2 /* RepDesktopHelperTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RepDesktopHelperTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B2F6C9D42FF959E400EE30B2 /* RepDesktopHelperUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RepDesktopHelperUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -70,6 +71,7 @@
 		B2F6C9B42FF959E300EE30B2 = {
 			isa = PBXGroup;
 			children = (
+				B2924E213005FB7000209D49 /* RepDesktopHelper.entitlements */,
 				B2F6C9BF2FF959E300EE30B2 /* RepDesktopApp */,
 				B2F6C9F62FF9E20200EE30B2 /* Frameworks */,
 				B2F6C9BE2FF959E300EE30B2 /* Products */,
@@ -393,6 +395,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = RepDesktopHelper.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
@@ -435,6 +438,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = RepDesktopHelper.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;

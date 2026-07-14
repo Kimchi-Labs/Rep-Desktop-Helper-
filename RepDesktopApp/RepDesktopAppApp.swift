@@ -11,7 +11,7 @@ import SwiftUI
 struct RepDesktopAppApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            RootView()
               
         }.windowResizability(.contentSize)
             .windowStyle(.hiddenTitleBar)
