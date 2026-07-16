@@ -213,7 +213,7 @@ public final class AudioTranscriptionManager: ObservableObject {
                 print("wait loop re-checking: \(i) time(s)")
             }
             
-            let live: String = liveTranscription.trimmingCharacters(in: .whitespacesAndNewlines)   ///Fallback is retry loop fails
+            let live: String = liveTranscription.trimmingCharacters(in: .whitespacesAndNewlines)   ///Fallback if retry loop fails
             
             if didStopAudioStream && !live.isEmpty {
                 finishedTranscript = liveTranscription
@@ -257,7 +257,7 @@ public final class AudioTranscriptionManager: ObservableObject {
             
             try await MainActor.run {
                 if response.type == "error" { throw ErrorDesc.extractError }
-                
+                print("RESPONSE TYPE: \(response.type)")
                 switch response.type {
                 case "conversation.item.input_audio_transcription.delta":
                     if let delta = response.delta {

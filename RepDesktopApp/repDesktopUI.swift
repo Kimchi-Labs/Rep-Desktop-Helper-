@@ -71,13 +71,14 @@ struct ContentView: View {
                         Task {
                             if audioManager.isTranscribing {
                                 //let desktopAccessToken = try await AuthenticatePairing.desktopAuthPoller()
+                                try await AudioTranscriptionHelper.requestMicAccess()
                                 let session = try await audioManager.openAudioSession()
                                 try await audioManager.startAudioStream(session: session)
                                 
                             } else {
                                 try await audioManager.stopAudioStream(context: context) { delta in
                                     streamingText += delta
-                                    audioManager.isTranscribing = false
+                                    audioManager.liveTranscription.removeAll()
                                 }
                             }
                         }

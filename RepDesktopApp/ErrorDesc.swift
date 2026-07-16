@@ -20,6 +20,7 @@ enum ErrorDesc: LocalizedError {
     case floatError
     case configError
     case sessionError
+    case audioError
 }
 
 enum ErrorDefinition: Error {

@@ -20,6 +20,14 @@ final class AudioTranscriptionHelper {
     private init() {}
 
     
+    public static func requestMicAccess() async throws {
+        let accessGranted = await AVCaptureDevice.requestAccess(for: .audio)
+        guard accessGranted else { throw ErrorDesc.audioError }
+        
+        print("Mic access granted ✅", accessGranted)
+    }
+
+    
     nonisolated public static func resampleBuffer(_ inputBuffer: AVAudioPCMBuffer, converter: AVAudioConverter, outputFormat: AVAudioFormat) throws -> AVAudioPCMBuffer {
         let ratio = outputFormat.sampleRate / inputBuffer.format.sampleRate
         let outputFrameCapacity = AVAudioFrameCount(Double(inputBuffer.frameLength) * ratio)
@@ -51,7 +59,7 @@ final class AudioTranscriptionHelper {
         
         let frameLength: Int = Int(buffer.frameLength)
         let channel: UnsafeMutablePointer<Float> = bufferChannelData[0]
-        
+
         guard frameLength > 0 else { throw ErrorDesc.nilValue }
         
         var sumOfSampleSquares: Float = 0

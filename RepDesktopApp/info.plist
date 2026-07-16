@@ -3,6 +3,6 @@
 <plist version="1.0">
 <dict>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>A user-facing string like “Rep needs access to the microphone to transcribe meetings.</string>
+	<string>Rep needs access to the microphone to transcribe meetings.</string>
 </dict>
 </plist>
