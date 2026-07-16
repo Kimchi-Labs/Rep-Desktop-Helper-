@@ -41,7 +41,7 @@ struct ContentView: View {
                     Capsule()
                         .foregroundStyle(Color.clear).glassEffect(.clear)
                     
-                    Text("Currently Transcribing: ").font(.system(size: 12, design: .rounded)).fontWeight(.medium)  //dynamically pass meeting type
+                    Text("Currently Transcribing: ").font(.system(size: 12, design: .rounded)).fontWeight(.medium)          //TODO: dynamically pass meeting type
                         .foregroundStyle(Color.kimchilabsReversed).opacity(0.8)
                     
                     
@@ -62,7 +62,7 @@ struct ContentView: View {
                             .padding(.leading, 3)
                         
                         Spacer()
-                        Waveform(audioLevel: 0.0, isRecording: isRecording, isPaused: isPaused)
+                        Waveform(audioLevel: audioManager.audioLevels, isRecording: audioManager.isTranscribing, isPaused: isPaused)
                             .padding(.trailing, 3)
                     }
                     
@@ -71,12 +71,16 @@ struct ContentView: View {
                         Task {
                             if audioManager.isTranscribing {
                                 //let desktopAccessToken = try await AuthenticatePairing.desktopAuthPoller()
+                                isRecording = true
+                                isPaused = false
                                 try await AudioTranscriptionHelper.requestMicAccess()
                                 let session = try await audioManager.openAudioSession()
                                 try await audioManager.startAudioStream(session: session)
                                 
                             } else {
                                 try await audioManager.stopAudioStream(context: context) { delta in
+                                    isRecording = false
+                                    isPaused = true
                                     streamingText += delta
                                     audioManager.liveTranscription.removeAll()
                                 }

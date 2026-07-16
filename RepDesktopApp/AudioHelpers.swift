@@ -91,11 +91,14 @@ final class AudioTranscriptionHelper {
     
     
     public static func waveHeight(for index: Int, audioLevel: CGFloat) -> CGFloat {
-        let baseHeight: CGFloat = 25
-        let maxGrowth: CGFloat = 55
-
-        let multipliers: [CGFloat] = [0.75, 1.0, 1.5, 1.0, 0.75]
-
+        let baseHeight: CGFloat = 15
+        let maxGrowth: CGFloat = 35
+        
+        let multipliers: [CGFloat] = [0.42, 0.50, 0.61, 0.70, 0.78, 0.85, 0.80,
+                                      0.72, 0.63, 0.58, 0.66, 0.75, 0.86, 0.94,
+                                      1.00, 0.92, 0.84, 0.77, 0.82, 0.88, 0.79,
+                                      0.68, 0.57, 0.49, 0.54, 0.63, 0.72]
+        
         return baseHeight + audioLevel * maxGrowth * multipliers[index]
     }
 }
