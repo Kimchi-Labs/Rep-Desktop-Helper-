@@ -114,7 +114,7 @@ public final class AudioTranscriptionManager: ObservableObject {
             return decodeSession.session
             
         } catch {
-            print("error opening audio session", ErrorDesc.sessionError, error)  //TODO: debug next
+            print("error opening audio session", ErrorDesc.sessionError, error) 
         }
         throw ErrorDesc.sessionError
     }
