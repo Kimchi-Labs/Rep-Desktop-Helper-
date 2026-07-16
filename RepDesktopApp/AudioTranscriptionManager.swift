@@ -127,14 +127,14 @@ public final class AudioTranscriptionManager: ObservableObject {
     }
     
     
-    func retryWebSocket(urlRequest: URLRequest) async throws {                
+    func retryWebSocket(urlRequest: URLRequest) async throws {
         webSocketTask?.cancel(with: .goingAway, reason: .none)
         
         let newWebSocket = createWebSocket(urlRequest: urlRequest)
         self.webSocketTask = newWebSocket
         newWebSocket.resume()
         
-        print("reconnected to web socket...")
+        print("reconnected to web socket..")
         try await Task.sleep(for: .milliseconds(300))
     }
     
