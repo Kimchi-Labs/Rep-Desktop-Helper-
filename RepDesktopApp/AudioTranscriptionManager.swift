@@ -114,20 +114,20 @@ public final class AudioTranscriptionManager: ObservableObject {
             return decodeSession.session
             
         } catch {
-            print("error opening audio session", ErrorDesc.sessionError, error) 
+            print("error opening audio session", ErrorDesc.sessionError, error)
         }
         throw ErrorDesc.sessionError
     }
     
     
-    func createWebSocket(urlRequest: URLRequest) -> URLSessionWebSocketTask {   ///first time start-up
+    func createWebSocket(urlRequest: URLRequest) -> URLSessionWebSocketTask {
         let socketId: String = UUID().uuidString
         print("new web socket created: \(socketId)")
         return URLSession.shared.webSocketTask(with: urlRequest)
     }
     
     
-    func retryWebSocket(urlRequest: URLRequest) async throws {                  ///retry for failed connections
+    func retryWebSocket(urlRequest: URLRequest) async throws {                
         webSocketTask?.cancel(with: .goingAway, reason: .none)
         
         let newWebSocket = createWebSocket(urlRequest: urlRequest)
