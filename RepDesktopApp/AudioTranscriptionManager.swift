@@ -209,6 +209,7 @@ public final class AudioTranscriptionManager: ObservableObject {
                     return
                 }
                 
+                isSummarizing = true
                 try await Task.sleep(for: .milliseconds(300))
                 print("wait loop re-checking: \(i) time(s)")
             }
@@ -367,7 +368,6 @@ public final class AudioTranscriptionManager: ObservableObject {
                     isSummarizing = false
                     isTranscriptFinished = true
                     summarizedNotes += delta
-                    print("deltas appended to summarized notes: \(summarizedNotes)")
                 }
             }
             

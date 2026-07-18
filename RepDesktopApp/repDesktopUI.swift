@@ -18,6 +18,8 @@ struct ContentView: View {
     @State var isPaused: Bool = false
     @State private var streamingText: String = ""
     
+    private var transcriptNotesGenerating: String = "Sending Your Notes To Your iPhone ..."
+    
     @StateObject var audioManager = AudioTranscriptionManager.shared
     
     var body: some View {
@@ -56,6 +58,10 @@ struct ContentView: View {
             
             HStack {
                 VStack(alignment: .leading, spacing: 5) {
+                    
+                    if audioManager.isSummarizing {
+                        ShimmerText(text: transcriptNotesGenerating)
+                    }
                     
                     HStack {
                         Text("Finished notes will appear in Rep on your\niPhone when you end this transcription.").font(.system(size: 14, design: .rounded)).fontWeight(.medium).opacity(0.5)
