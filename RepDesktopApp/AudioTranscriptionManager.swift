@@ -205,11 +205,13 @@ public final class AudioTranscriptionManager: ObservableObject {
                 let finished: String = finishedTranscript.trimmingCharacters(in: .whitespacesAndNewlines)
                 
                 if didStopAudioStream && !finished.isEmpty {
+                    await MainActor.run { isSummarizing = true }
+                    defer { isSummarizing = false }
+                    
                     _ = try await summarizeFinishedTranscript(context: context, onChunk: onChunk)
                     return
                 }
                 
-                isSummarizing = true
                 try await Task.sleep(for: .milliseconds(300))
                 print("wait loop re-checking: \(i) time(s)")
             }
@@ -319,6 +321,7 @@ public final class AudioTranscriptionManager: ObservableObject {
         
         let fullTranscript: String = finishedTranscript.trimmingCharacters(in: .whitespacesAndNewlines)
         print("FULL TRANSCRIPT: \(fullTranscript)")
+        await MainActor.run { isSummarizing = false }
         
         let openAIRequest: URL = URL(string: "https://oxgumwqxnghqccazzqvw.supabase.co/functions/v1/ai_summerizer-chat-dev")!  //TODO: change back to prod after
         var urlRequest: URLRequest = URLRequest(url: openAIRequest)
@@ -332,6 +335,7 @@ public final class AudioTranscriptionManager: ObservableObject {
         urlRequest.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
         urlRequest.setValue("Bearer \(supabaseAccessToken)", forHTTPHeaderField: "Authorization")
         urlRequest.setValue("chat", forHTTPHeaderField: "x-rep-action")
+        urlRequest.setValue("desktop-helper", forHTTPHeaderField: "x-rep-source")
         urlRequest.httpMethod = "POST"
         
         var multipartReqBody = Data()
