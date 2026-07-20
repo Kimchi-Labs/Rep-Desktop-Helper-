@@ -375,6 +375,9 @@ public final class AudioTranscriptionManager: ObservableObject {
                 }
             }
             
+            try await LocalNotificationsDelegate.shared.requestLocalNotificationPermission()
+            try await LocalNotificationsDelegate.shared.notifyNotesSentToMobile()
+            
         } catch {
             print("failed to return response ❗️", ErrorDesc.decodeError, error)
             throw ErrorDesc.decodeError

@@ -21,6 +21,7 @@ enum ErrorDesc: LocalizedError {
     case configError
     case sessionError
     case audioError
+    case permissionsError
 }
 
 enum ErrorDefinition: Error {
