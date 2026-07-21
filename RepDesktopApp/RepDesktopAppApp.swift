@@ -8,9 +8,11 @@
 import SwiftUI
 import UserNotifications
 
+
+
 @main
 struct RepDesktopAppApp: App {
-   
+    
     private let notificationDelegate = LocalNotificationsDelegate.shared
     init() {
         UNUserNotificationCenter.current().delegate = notificationDelegate
@@ -23,5 +25,8 @@ struct RepDesktopAppApp: App {
             
         }.windowResizability(.contentSize)
             .windowStyle(.hiddenTitleBar)
+        
+        RepMenuBar()
     }
 }
+

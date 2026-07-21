@@ -118,6 +118,88 @@ struct AuthView: View {
     }
 }
 
+struct RepMenuBar: Scene {
+    @State var isToggled: Bool = true
+    var body: some Scene {
+        
+        MenuBarExtra("Rep", image: "repMenuBarIcon") {
+            MenuBarView(isToggled: $isToggled )
+        }.menuBarExtraStyle(.window)
+    }
+}
+
+
+struct MenuBarView: View {
+    @Binding var isToggled: Bool
+    
+    var body: some View {
+        
+        VStack(alignment: .center, spacing: 10) {
+            
+            HStack(spacing: 55) {
+                Text("Enable auto detect").foregroundStyle(Color.kimchilabsReversed).opacity(0.8)
+                    .font(.system(size: 12))
+                    .fontDesign(.rounded)
+                Toggle("", isOn: $isToggled)
+                    .toggleStyle(.switch)
+                    .labelsHidden()
+            }
+            
+            Divider().padding(.horizontal)
+            
+            HStack {
+                Button {
+                    //call state here
+                } label: {
+                    ZStack {
+                        Capsule().frame(height: 20)
+                            .foregroundStyle(Color.clear)
+                        
+                        Text("Quit Rep Desktop helper                ⌘ Q")
+                            .foregroundStyle(Color.kimchilabsReversed).opacity(0.8)
+                                .font(.system(size: 12))
+                                .fontDesign(.rounded)
+                    }
+                }.buttonStyle(.plain)
+            }.padding(.horizontal)
+            
+            
+            Divider().padding(.horizontal)
+            
+            Text("Keep Rep in the menu bar to auto\ndetect and join meetings")
+                .font(.subheadline)
+                .fontDesign(.rounded)
+                .foregroundStyle(Color.kimchilabsReversed).opacity(0.5)
+                .multilineTextAlignment(.center)
+            
+           
+            
+            Button {
+                //state here
+            } label: {
+                
+                ZStack {
+                    
+                    Capsule().frame(height: 35).padding(.horizontal)
+                        .foregroundStyle(Color.kimchilabsReversed)
+                    
+                    HStack(spacing: 5) {
+                        Text("Start New Transcription")
+                            .font(.system(size: 12, design: .rounded)).fontWeight(.regular)
+                            .foregroundStyle(Color.kimchilabsBackground)
+                        
+                        Image(systemName: "waveform.mid")
+                            .font(.system(size: 12, design: .rounded)).fontWeight(.regular)
+                            .foregroundStyle(Color.kimchilabsBackground)
+                    }
+                }
+                
+            }.buttonStyle(.plain)
+            
+            
+        }.frame(width: 250, height: 180)
+    }
+}
 
 #Preview {
     Waveform(audioLevel: 3.0, isRecording: true, isPaused: false)
@@ -125,4 +207,8 @@ struct AuthView: View {
 
 #Preview {
     AuthView()
+}
+
+#Preview {
+    MenuBarView(isToggled: .constant(true))
 }
