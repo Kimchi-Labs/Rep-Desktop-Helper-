@@ -70,38 +70,38 @@ struct AuthView: View {
                             SignInWithAppleButton(.signIn) { request in
                                 let nonce = randomNonceString()
                                 currentNonce = nonce
-
+                                
                                 request.requestedScopes = [.fullName, .email]
                                 request.nonce = sha256(nonce)
                             } onCompletion: { result in
                                 switch result {
                                 case .success(let authorization):
                                     auth.handleSuccessfulLogin(authorization, nonce: currentNonce)
-
+                                    
                                 case .failure(let error):
                                     auth.handleLoginError(with: error)
                                 }
                             }
                             .signInWithAppleButtonStyle(.black)
-
+                            
                         case .dark:
                             SignInWithAppleButton(.signIn) { request in
                                 let nonce = randomNonceString()
                                 currentNonce = nonce
-
+                                
                                 request.requestedScopes = [.fullName, .email]
                                 request.nonce = sha256(nonce)
                             } onCompletion: { result in
                                 switch result {
                                 case .success(let authorization):
                                     auth.handleSuccessfulLogin(authorization, nonce: currentNonce)
-
+                                    
                                 case .failure(let error):
                                     auth.handleLoginError(with: error)
                                 }
                             }
                             .signInWithAppleButtonStyle(.white)
-
+                            
                         @unknown default:
                             EmptyView()
                         }
@@ -120,10 +120,13 @@ struct AuthView: View {
 
 struct RepMenuBar: Scene {
     @State var isToggled: Bool = true
+    @State var isRecording: Bool = false
+    @State var isPaused: Bool = false
+    
     var body: some Scene {
         
         MenuBarExtra("Rep", image: "repMenuBarIcon") {
-            MenuBarView(isToggled: $isToggled )
+            MenuBarView(isToggled: $isToggled, isRecording: $isRecording, isPaused: $isPaused)
         }.menuBarExtraStyle(.window)
     }
 }
@@ -131,6 +134,31 @@ struct RepMenuBar: Scene {
 
 struct MenuBarView: View {
     @Binding var isToggled: Bool
+    @Binding var isRecording: Bool
+    @Binding var isPaused: Bool
+    
+    @StateObject var audioManager = AudioTranscriptionManager.shared
+    
+    func openDesktop() {
+        NSApplication.shared.activate(ignoringOtherApps: true)
+        if let window = NSApplication.shared.windows.first {
+            window.makeKeyAndOrderFront(nil)
+            window.orderFrontRegardless()
+        }
+    }
+    
+    func quitDesktop() {
+        NSApplication.shared.terminate(nil)
+    }
+    
+    @MainActor
+    func transcribe() async throws {
+        isRecording = true
+        isPaused = false
+        try await AudioTranscriptionHelper.requestMicAccess()
+        let session = try await audioManager.openAudioSession()
+        try await audioManager.startAudioStream(session: session)
+    }
     
     var body: some View {
         
@@ -149,20 +177,25 @@ struct MenuBarView: View {
             
             HStack {
                 Button {
-                    //call state here
+                    quitDesktop()
                 } label: {
                     ZStack {
                         Capsule().frame(height: 20)
                             .foregroundStyle(Color.clear)
                         
-                        Text("Quit Rep Desktop helper                ⌘ Q")
-                            .foregroundStyle(Color.kimchilabsReversed).opacity(0.8)
+                        HStack(spacing: 60) {
+                            Text("Quit Rep Desktop helper")
+                                .foregroundStyle(Color.kimchilabsReversed).opacity(0.8)
                                 .font(.system(size: 12))
                                 .fontDesign(.rounded)
+                            
+                            Image(systemName: "xmark.circle")
+                                .foregroundStyle(Color.kimchilabsReversed).opacity(0.8)
+                                .font(.system(size: 14))
+                        }
                     }
                 }.buttonStyle(.plain)
             }.padding(.horizontal)
-            
             
             Divider().padding(.horizontal)
             
@@ -172,14 +205,14 @@ struct MenuBarView: View {
                 .foregroundStyle(Color.kimchilabsReversed).opacity(0.5)
                 .multilineTextAlignment(.center)
             
-           
             
             Button {
-                //state here
+                openDesktop()
+                Task {
+                    try await transcribe()
+                }
             } label: {
-                
                 ZStack {
-                    
                     Capsule().frame(height: 35).padding(.horizontal)
                         .foregroundStyle(Color.kimchilabsReversed)
                     
@@ -196,7 +229,6 @@ struct MenuBarView: View {
                 
             }.buttonStyle(.plain)
             
-            
         }.frame(width: 250, height: 180)
     }
 }
@@ -210,5 +242,5 @@ struct MenuBarView: View {
 }
 
 #Preview {
-    MenuBarView(isToggled: .constant(true))
+    MenuBarView(isToggled: .constant(true), isRecording: .constant(false), isPaused: .constant(false))
 }

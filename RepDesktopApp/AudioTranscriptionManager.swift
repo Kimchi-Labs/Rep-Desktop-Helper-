@@ -205,10 +205,12 @@ public final class AudioTranscriptionManager: ObservableObject {
                 let finished: String = finishedTranscript.trimmingCharacters(in: .whitespacesAndNewlines)
                 
                 if didStopAudioStream && !finished.isEmpty {
+                    guard !finished.isEmpty else { return await MainActor.run { isSummarizing = false }}
+                    
                     await MainActor.run { isSummarizing = true }
-                    defer { isSummarizing = false }
                     
                     _ = try await summarizeFinishedTranscript(context: context, onChunk: onChunk)
+                    await MainActor.run { isSummarizing = false }
                     return
                 }
                 
