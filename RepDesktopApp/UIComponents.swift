@@ -138,6 +138,7 @@ struct MenuBarView: View {
     @Binding var isPaused: Bool
     
     @StateObject var audioManager = AudioTranscriptionManager.shared
+    @StateObject var menuBarManager = MenuBarManager.shared
     
     func openDesktop() {
         NSApplication.shared.activate(ignoringOtherApps: true)
@@ -151,6 +152,11 @@ struct MenuBarView: View {
         NSApplication.shared.terminate(nil)
     }
     
+    func startOSProcessTask() {
+        menuBarManager.startOSProcessTask()
+    }
+    
+    
     @MainActor
     func transcribe() async throws {
         isRecording = true
@@ -161,9 +167,7 @@ struct MenuBarView: View {
     }
     
     var body: some View {
-        
         VStack(alignment: .center, spacing: 10) {
-            
             HStack(spacing: 55) {
                 Text("Enable auto detect").foregroundStyle(Color.kimchilabsReversed).opacity(0.8)
                     .font(.system(size: 12))
@@ -226,12 +230,16 @@ struct MenuBarView: View {
                             .foregroundStyle(Color.kimchilabsBackground)
                     }
                 }
-                
             }.buttonStyle(.plain)
             
         }.frame(width: 250, height: 180)
+        
+            .task {
+                startOSProcessTask()
+            }
     }
 }
+
 
 #Preview {
     Waveform(audioLevel: 3.0, isRecording: true, isPaused: false)
