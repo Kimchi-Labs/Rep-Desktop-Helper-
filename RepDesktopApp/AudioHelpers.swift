@@ -8,6 +8,7 @@
 import Foundation
 import SwiftData
 @preconcurrency import AVFoundation
+import ScreenCaptureKit
 
 
 public struct AudioBufferData {
@@ -100,6 +101,20 @@ final class AudioTranscriptionHelper {
                                       0.68, 0.57, 0.49, 0.54, 0.63, 0.72]
         
         return baseHeight + audioLevel * maxGrowth * multipliers[index]
+    }
+    
+    
+    public static func stopSystemStream() async throws {
+        do {
+            guard let stream = ScreenAudio.stream else { return }
+            try stream.removeStreamOutput(ScreenAudio.screenAudio, type: .audio)
+            try await stream.stopCapture()
+            ScreenAudio.stream = nil
+            
+            print("system audio from screen recoridng stopped")
+        } catch {
+            print("failed to stop system stream", ErrorDesc.audioError, error)
+        }
     }
 }
 

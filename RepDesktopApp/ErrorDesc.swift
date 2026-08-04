@@ -24,6 +24,8 @@ enum ErrorDesc: LocalizedError {
     case permissionsError
     case noRunningProcessError
     case taskError
+    case screenCaptureConfigError
+    case bufferError
 }
 
 enum ErrorDefinition: Error {

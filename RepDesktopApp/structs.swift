@@ -35,7 +35,3 @@ public struct DesktopPairing: Decodable {
 }
 
 
-    /* {
-     "status": "pending"
-   } */
-    

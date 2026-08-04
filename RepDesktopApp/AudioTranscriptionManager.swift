@@ -26,6 +26,7 @@ import Supabase
 import SwiftData
 import Combine
 @preconcurrency import AVFoundation
+import ScreenCaptureKit
 
 
 
@@ -49,6 +50,60 @@ public final class AudioTranscriptionManager: ObservableObject {
     
     
     private let audioEngine = AVAudioEngine()
+    
+    enum CaptureType {
+        case mic
+        case system
+    }
+    
+    func audioCaptureRunner(_ sample: CaptureType) async throws {
+        switch sample {
+        case .mic:
+            try? startMicCapture()
+            print("external audio from device mic being captured")
+        case .system:
+            try await ScreenAudio.configScreenAudioCapture()
+            print("system audio being captured")
+        }
+    }
+    
+    
+    public func startSystemCapture(from sampleBuffer: CMSampleBuffer) async throws -> AVAudioPCMBuffer {
+        guard let resampleFormat = AVAudioFormat(commonFormat: .pcmFormatFloat32, sampleRate: 24_000, channels: 1, interleaved: false) else { throw ErrorDesc.audioError }
+        
+        let frame = AVAudioFrameCount(CMSampleBufferGetNumSamples(sampleBuffer))
+        guard let fromPcmBuffer = AVAudioPCMBuffer(pcmFormat: resampleFormat, frameCapacity: frame) else { throw ErrorDesc.audioError }
+        
+        try sampleBuffer.withAudioBufferList { audioBufferList, _ in
+            guard let sourceBuffers = audioBufferList.first else { throw ErrorDesc.bufferError }
+            
+            guard let sourceData = sourceBuffers.mData else { throw ErrorDesc.bufferError }
+            guard let destData = fromPcmBuffer.audioBufferList.pointee.mBuffers.mData else { throw ErrorDesc.bufferError }
+            
+            memcpy(destData, sourceData, Int(sourceBuffers.mDataByteSize))
+            fromPcmBuffer.frameLength = frame
+            
+            guard let converter = AVAudioConverter(from: fromPcmBuffer.format, to: resampleFormat) else { throw ErrorDesc.configError }
+            
+            let resampledBuffer = try AudioTranscriptionHelper.resampleBuffer(fromPcmBuffer, converter: converter, outputFormat: resampleFormat)
+            let getPcmData: AudioBufferData = try AudioTranscriptionHelper.convertBufferToPCM16Data(resampledBuffer)
+            
+            let pcmData: Data = getPcmData.data
+            let pcmRms: Float = getPcmData.rms
+            
+            let getAudioLevels = AudioTranscriptionHelper.scaleAudioWaves(rms: pcmRms)
+            
+            Task { @MainActor in
+                self.audioLevels = CGFloat(getAudioLevels)
+            }
+            
+            Task {
+                try? await self.sendAudioChunk(pcmData)
+            }
+        }
+        return fromPcmBuffer
+    }
+    
     
     public func startMicCapture() throws {
         let micInput = audioEngine.inputNode
@@ -161,7 +216,7 @@ public final class AudioTranscriptionManager: ObservableObject {
                 try await transcriptionEventListener(urlRequest: urlRequest)
             }
         
-            try startMicCapture()
+            try? await self.audioCaptureRunner(.system)
             
         } catch {
             print("failed to start stream to openai transcription endpoint ❗️", ErrorDesc.webSocketError, error)

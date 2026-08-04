@@ -84,6 +84,7 @@ struct ContentView: View {
                                 try await audioManager.startAudioStream(session: session)
                                 
                             } else {
+                                try await AudioTranscriptionHelper.stopSystemStream()
                                 try await audioManager.stopAudioStream(context: context) { delta in
                                     isRecording = false
                                     isPaused = true

@@ -119,7 +119,7 @@ struct AuthView: View {
 }
 
 struct RepMenuBar: Scene {
-    @State var isToggled: Bool = true
+    @State var isToggled: Bool = false
     @State var isRecording: Bool = false
     @State var isPaused: Bool = false
     
@@ -152,9 +152,12 @@ struct MenuBarView: View {
         NSApplication.shared.terminate(nil)
     }
     
-    func startOSProcessTask() {
-        menuBarManager.startOSProcessTask()
-    }
+    
+    //func startOSProcessTask() {
+       //let access = AccessWindows.requestAccessibilityPermission()
+        //print("is permission granted?: \(access)")
+        //menuBarManager.startOSProcessTask()
+    //}
     
     
     @MainActor
@@ -234,9 +237,9 @@ struct MenuBarView: View {
             
         }.frame(width: 250, height: 180)
         
-            .task {
-                startOSProcessTask()
-            }
+//            .task {
+//                startOSProcessTask()
+//            }
     }
 }
 
