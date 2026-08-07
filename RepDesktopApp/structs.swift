@@ -6,16 +6,16 @@
 //
 
 public struct AudioSession: Decodable {             ///for audio transcription
-    let session: SessionData
+    public let session: SessionData
     
     public struct SessionData: Decodable {
-        let value: String
-        let expires_at: Int
-        let session: SessionTypes
+        public let value: String
+        public let expires_at: Int
+        public let session: SessionTypes
         
         public struct SessionTypes: Decodable {
-            let type: String
-            let id: String
+            public let type: String
+            public let id: String
         }
     }
 }

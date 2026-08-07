@@ -85,38 +85,9 @@ public final class ScreenAudio: NSObject, SCStreamOutput {
 }
 
 
-//public final class AccessWindows {
-//    public static func requestAccessibilityPermission() -> Bool {
-//        let options = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true] as CFDictionary
-//        return AXIsProcessTrustedWithOptions(options)
-//    }
-//    
-//    public static func frontmostWindowTitle(for app: NSRunningApplication) -> String? {
-//        let appElement = AXUIElementCreateApplication(app.processIdentifier)
-//        
-//        var focusedWindow: CFTypeRef?
-//        let result = AXUIElementCopyAttributeValue(appElement, kAXFocusedWindowAttribute as CFString, &focusedWindow)
-//        
-//        guard result == .success, let window = focusedWindow else { return nil }
-//        
-//        var title: CFTypeRef?
-//        let titleResult = AXUIElementCopyAttributeValue(window as! AXUIElement, kAXTitleAttribute as CFString, &title)
-//        
-//        guard titleResult == .success else { return nil }
-//        
-//        var windowsRef: CFTypeRef?
-//        let windowsResult = AXUIElementCopyAttributeValue(appElement, kAXWindowsAttribute as CFString, &windowsRef)
-//        
-//        guard windowsResult == .success, let windows = windowsRef as? [AXUIElement] else { return nil }
-//        
-//        for window in windows {
-//            var title: CFTypeRef?
-//            let titleResult = AXUIElementCopyAttributeValue(window, kAXTitleAttribute as CFString, &title)
-//            
-//            if titleResult == .success, let titleStr = title as? String, !titleStr.isEmpty {
-//                return titleStr
-//            }
-//        }
-//        return title as? String
-//    }
-//}
+public final class Accessibility {
+    public static func requestAccessibilityPermission() -> Bool {
+        let options = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true] as CFDictionary
+        return AXIsProcessTrustedWithOptions(options)
+    }
+}

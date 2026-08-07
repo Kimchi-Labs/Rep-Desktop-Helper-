@@ -158,10 +158,11 @@ public final class AudioTranscriptionManager: ObservableObject {
         
         do {
             let (data, response) = try await URLSession.shared.data(for: urlRequest)
-            print("SESSION DATA ✅: \(data)")
+            print("SESSION RESPONSE ✅: \(response)")
             
             guard let urlResponse = response as? HTTPURLResponse else { throw ErrorDesc.serverError }
-            let _ = String(data: data, encoding: .utf8)
+            let body = String(data: data, encoding: .utf8)
+            print("body: \(body ?? "")")
             
             guard (200...299).contains(urlResponse.statusCode) else { throw ErrorDesc.urlResponseError }
             
@@ -225,7 +226,6 @@ public final class AudioTranscriptionManager: ObservableObject {
     
     
     public func transcriptionEventListener(urlRequest: URLRequest) async throws {
-        
         while isTranscribing {
             guard webSocketTask != nil else { throw ErrorDesc.webSocketError }
             
@@ -274,7 +274,6 @@ public final class AudioTranscriptionManager: ObservableObject {
             }
             
             let live: String = liveTranscription.trimmingCharacters(in: .whitespacesAndNewlines)   ///Fallback if retry loop fails
-            
             if didStopAudioStream && !live.isEmpty {
                 finishedTranscript = liveTranscription
                 _ = try await summarizeFinishedTranscript(context: context, onChunk: onChunk)
@@ -292,7 +291,6 @@ public final class AudioTranscriptionManager: ObservableObject {
     
     public func decodeTranscriptionResponse() async throws -> TranscriptionStream {
         guard let webSocketTask else { throw ErrorDesc.webSocketError }
-        
         let streamMessage: MessageTranscription = try await webSocketTask.receive()
         
         switch streamMessage {
@@ -311,7 +309,6 @@ public final class AudioTranscriptionManager: ObservableObject {
     
     
     public func extractTranscriptionResponseDelta() async throws {
-        
         do {
             let response = try await decodeTranscriptionResponse()
             

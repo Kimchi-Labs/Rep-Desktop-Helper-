@@ -153,11 +153,11 @@ struct MenuBarView: View {
     }
     
     
-    //func startOSProcessTask() {
-       //let access = AccessWindows.requestAccessibilityPermission()
-        //print("is permission granted?: \(access)")
-        //menuBarManager.startOSProcessTask()
-    //}
+    func startOSTask() {
+       let access = Accessibility.requestAccessibilityPermission()
+        print("is permission granted?: \(access)")
+        menuBarManager.startOSProcessTask()
+    }
     
     
     @MainActor
@@ -237,9 +237,21 @@ struct MenuBarView: View {
             
         }.frame(width: 250, height: 180)
         
-//            .task {
-//                startOSProcessTask()
-//            }
+            .task {
+                startOSTask()
+            }
+        
+            .task {
+                do {
+                    if try await menuBarManager.detectProviderWindow() {
+                        openDesktop()
+                        try await transcribe()
+                    }
+                    
+                } catch {
+                    print("failed to call window detection", ErrorDesc.callsiteError, error)
+                }
+            }
     }
 }
 
