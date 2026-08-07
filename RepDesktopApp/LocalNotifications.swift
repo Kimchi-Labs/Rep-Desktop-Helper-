@@ -32,4 +32,14 @@ final class LocalNotificationsDelegate: NSObject, UNUserNotificationCenterDelega
         let request = UNNotificationRequest(identifier: "desktop-notes-sent-\(UUID().uuidString)", content: content, trigger: nil)
         try await UNUserNotificationCenter.current().add(request)
     }
+    
+    func meetingDetected() async throws {
+        let content = UNMutableNotificationContent()
+        content.title = "Meeting Detected"
+        content.body = "Rep is Auto transcribing this meeting"
+        content.sound = .default
+        
+        let request = UNNotificationRequest(identifier: "desktop-meeting-detected\(UUID().uuidString)", content: content, trigger: nil)
+        try await UNUserNotificationCenter.current().add(request)
+    }
 }

@@ -145,6 +145,7 @@ struct MenuBarView: View {
         if let window = NSApplication.shared.windows.first {
             window.makeKeyAndOrderFront(nil)
             window.orderFrontRegardless()
+            window.level = .modalPanel
         }
     }
     
@@ -167,6 +168,7 @@ struct MenuBarView: View {
         try await AudioTranscriptionHelper.requestMicAccess()
         let session = try await audioManager.openAudioSession()
         try await audioManager.startAudioStream(session: session)
+        try await LocalNotificationsDelegate.shared.meetingDetected()
     }
     
     var body: some View {
