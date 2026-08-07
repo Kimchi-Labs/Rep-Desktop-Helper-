@@ -119,7 +119,8 @@ struct AuthView: View {
 }
 
 struct RepMenuBar: Scene {
-    @State var isToggled: Bool = false
+    @AppStorage("isToggled") private var isToggled = true
+    
     @State var isRecording: Bool = false
     @State var isPaused: Bool = false
     
@@ -139,6 +140,7 @@ struct MenuBarView: View {
     
     @StateObject var audioManager = AudioTranscriptionManager.shared
     @StateObject var menuBarManager = MenuBarManager.shared
+    
     
     func openDesktop() {
         NSApplication.shared.activate(ignoringOtherApps: true)
@@ -221,18 +223,36 @@ struct MenuBarView: View {
                     try await transcribe()
                 }
             } label: {
-                ZStack {
-                    Capsule().frame(height: 35).padding(.horizontal)
-                        .foregroundStyle(Color.kimchilabsReversed)
-                    
-                    HStack(spacing: 5) {
-                        Text("Start New Transcription")
-                            .font(.system(size: 12, design: .rounded)).fontWeight(.regular)
-                            .foregroundStyle(Color.kimchilabsBackground)
+                if isRecording {
+                    ZStack {
+                        Capsule().frame(height: 35).padding(.horizontal)
+                            .foregroundStyle(Color.blue)
                         
-                        Image(systemName: "waveform.mid")
-                            .font(.system(size: 12, design: .rounded)).fontWeight(.regular)
-                            .foregroundStyle(Color.kimchilabsBackground)
+                        HStack(spacing: 5) {
+                            Text("Currently Transcribing")
+                                .font(.system(size: 12, design: .rounded)).fontWeight(.regular)
+                                .foregroundStyle(Color.white)
+                            
+                            Image(systemName: "waveform.mid")
+                                .font(.system(size: 12, design: .rounded)).fontWeight(.regular)
+                                .foregroundStyle(Color.white)
+                        }
+                    }
+                    
+                } else {
+                    ZStack {
+                        Capsule().frame(height: 35).padding(.horizontal)
+                            .foregroundStyle(Color.kimchilabsReversed)
+                        
+                        HStack(spacing: 5) {
+                            Text("Start New Transcription")
+                                .font(.system(size: 12, design: .rounded)).fontWeight(.regular)
+                                .foregroundStyle(Color.kimchilabsBackground)
+                            
+                            Image(systemName: "microphone")
+                                .font(.system(size: 12, design: .rounded)).fontWeight(.regular)
+                                .foregroundStyle(Color.kimchilabsBackground)
+                        }
                     }
                 }
             }.buttonStyle(.plain)
@@ -245,9 +265,11 @@ struct MenuBarView: View {
         
             .task {
                 do {
-                    if try await menuBarManager.detectProviderWindow() {
-                        openDesktop()
-                        try await transcribe()
+                    if isToggled {
+                        if try await menuBarManager.detectProviderWindow() {
+                            openDesktop()
+                            try await transcribe()
+                        }
                     }
                     
                 } catch {

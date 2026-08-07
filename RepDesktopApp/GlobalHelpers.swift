@@ -91,3 +91,28 @@ public final class Accessibility {
         return AXIsProcessTrustedWithOptions(options)
     }
 }
+
+
+public final class DisplayProvider {
+    public static func displayProvider(appProvider: String) -> String {
+        
+        switch appProvider {
+        case "us.zoom.xos":
+            return "Zoom"
+        case "com.microsoft.teams2":
+            return "Teams"
+        case "com.microsoft.teams":
+            return "Teams"
+        case "Cisco-Systems.Spark":
+            return "Webex"
+        case "com.cisco.webexmeetings":
+            return "Webex"
+        case "com.google.Chrome":
+            return "Google Meets"
+        case "com.hnc.Discord":
+            return "Discord"
+        default:
+            return "Audio Meeting"
+        }
+    }
+}

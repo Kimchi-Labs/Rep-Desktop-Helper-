@@ -4,7 +4,8 @@
 //
 //  Created by alex haidar on 7/21/26.
 //
-/* Backend manager for accessing macOS process layor */
+/* Backend manager for accessing macOS process
+   layor and handling provider meeting detection */
 import Foundation
 import AppKit
 import Combine

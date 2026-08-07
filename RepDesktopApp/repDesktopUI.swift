@@ -17,6 +17,7 @@ struct ContentView: View {
     @State var isRecording: Bool = false
     @State var isPaused: Bool = false
     @State private var streamingText: String = ""
+    @State private var appProvider: String = ""
     
     private var transcriptNotesGenerating: String = "Sending Your Notes To Your iPhone ..."
     
@@ -37,18 +38,25 @@ struct ContentView: View {
                     
                 }.buttonStyle(.plain)
                 
-                Spacer()
+                Spacer(minLength: 200)
                 
-                ZStack() {
-                    Capsule()
-                        .foregroundStyle(Color.clear).glassEffect(.clear)
-                    
-                    Text("Currently Transcribing: ").font(.system(size: 12, design: .rounded)).fontWeight(.medium)          //TODO: dynamically pass meeting type
-                        .foregroundStyle(Color.kimchilabsReversed).opacity(0.8)
-                    
-                    
-                }.frame(minWidth: 180, maxWidth: 190, maxHeight: 25)
+                if audioManager.isTranscribing {
+                    HStack(spacing: 5) {
+                        Text("Currently Transcribing:").fontWeight(.medium).opacity(0.8)
+                        
+                        Text(DisplayProvider.displayProvider(appProvider: appProvider)).fontWeight(.regular)
+                    }
+                    .font(.system(size: 12, design: .rounded))
+                    .foregroundStyle(Color.kimchilabsReversed)
+                    .lineLimit(1)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 5)
+                    .glassEffect(.clear, in: .capsule)
+                    .fixedSize(horizontal: true, vertical: false)
+                    .frame(maxWidth: .infinity, alignment: .trailing)
                     .padding(.trailing)
+                    
+                }
                 
             }.padding(.leading, 10)
                 .frame(maxWidth: .infinity)
@@ -57,7 +65,7 @@ struct ContentView: View {
             Spacer(minLength: 2)
             
             HStack {
-                VStack(alignment: .leading, spacing: 5) {
+                VStack(alignment: .leading, spacing: 10) {
                     
                     if audioManager.isSummarizing {
                         ShimmerText(text: transcriptNotesGenerating)
@@ -94,7 +102,6 @@ struct ContentView: View {
                             }
                         }
                     } label: {
-                        
                         if audioManager.isTranscribing {
                             ZStack {
                                 Capsule().frame(width: 150, height: 35)
@@ -124,9 +131,7 @@ struct ContentView: View {
                     
                 }.padding(.leading)
                     .padding(.bottom)
-                
                 Spacer()
-                
             }
             
         }.frame(width: 500, height: 180)
@@ -134,6 +139,14 @@ struct ContentView: View {
             .background(Material.ultraThickMaterial)
             .clipShape(RoundedRectangle(cornerRadius: 30, style: .continuous))
         
+            .task {
+                while !Task.isCancelled {
+                    appProvider = NSWorkspace.shared.frontmostApplication?.bundleIdentifier ?? ""
+                    print("bundle id passed: \(appProvider)")
+                    
+                    try? await Task.sleep(for: .milliseconds(500))
+                }
+            }
     }
 }
 
