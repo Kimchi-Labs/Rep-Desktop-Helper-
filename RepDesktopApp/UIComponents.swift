@@ -141,6 +141,10 @@ struct MenuBarView: View {
     @StateObject var audioManager = AudioTranscriptionManager.shared
     @StateObject var menuBarManager = MenuBarManager.shared
     
+    @Environment(\.modelContext) private var context
+   
+    @State private var streamingText: String = ""
+    
     
     func openDesktop() {
         NSApplication.shared.activate(ignoringOtherApps: true)
@@ -170,7 +174,10 @@ struct MenuBarView: View {
         try await AudioTranscriptionHelper.requestMicAccess()
         let session = try await audioManager.openAudioSession()
         try await audioManager.startAudioStream(session: session)
-        try await LocalNotificationsDelegate.shared.meetingDetected()
+        
+        if isToggled {
+            try await LocalNotificationsDelegate.shared.meetingDetected()
+        }
     }
     
     var body: some View {
@@ -218,22 +225,36 @@ struct MenuBarView: View {
             
             
             Button {
-                openDesktop()
-                Task {
-                    try await transcribe()
+                if audioManager.isTranscribing {
+                    audioManager.isTranscribing = false
+                    Task {
+                        try await AudioTranscriptionHelper.stopSystemStream()
+                        try await audioManager.stopAudioStream(context: context) { delta in
+                            isRecording = false
+                            isPaused = true
+                            streamingText += delta
+                            audioManager.liveTranscription.removeAll()
+                        }
+                    }
+                } else {
+                    openDesktop()
+                    Task {
+                        try await transcribe()
+                    }
                 }
             } label: {
-                if isRecording {
+                if audioManager.isTranscribing {
                     ZStack {
-                        Capsule().frame(height: 35).padding(.horizontal)
+                        Capsule().glassEffect().frame(height: 35).padding(.horizontal)
                             .foregroundStyle(Color.blue)
+                        
                         
                         HStack(spacing: 5) {
                             Text("Currently Transcribing")
                                 .font(.system(size: 12, design: .rounded)).fontWeight(.regular)
                                 .foregroundStyle(Color.white)
                             
-                            Image(systemName: "waveform.mid")
+                            Image(systemName: "record.circle")
                                 .font(.system(size: 12, design: .rounded)).fontWeight(.regular)
                                 .foregroundStyle(Color.white)
                         }
@@ -258,6 +279,8 @@ struct MenuBarView: View {
             }.buttonStyle(.plain)
             
         }.frame(width: 250, height: 180)
+            .transition(.opacity.combined(with: .scale(scale: 0.96)))
+              .animation(.spring(response: 0.25, dampingFraction: 0.8), value: audioManager.isTranscribing)
         
             .task {
                 startOSTask()
@@ -265,13 +288,12 @@ struct MenuBarView: View {
         
             .task {
                 do {
-                    if isToggled {
+                    if isToggled && !isRecording {
                         if try await menuBarManager.detectProviderWindow() {
                             openDesktop()
                             try await transcribe()
                         }
                     }
-                    
                 } catch {
                     print("failed to call window detection", ErrorDesc.callsiteError, error)
                 }

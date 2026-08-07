@@ -9,14 +9,17 @@ import SwiftUI
 import UserNotifications
 
 
-
 @main
 struct RepDesktopAppApp: App {
+    @StateObject private var meetingDetection = MenuBarManager.shared
+    @StateObject private var audioManager = AudioTranscriptionManager.shared
+    
     
     private let notificationDelegate = LocalNotificationsDelegate.shared
     init() {
         UNUserNotificationCenter.current().delegate = notificationDelegate
     }
+    
     
     var body: some Scene {
         
@@ -26,7 +29,8 @@ struct RepDesktopAppApp: App {
         }.windowResizability(.contentSize)
             .windowStyle(.hiddenTitleBar)
         
-        RepMenuBar()
+        RepMenuBar().environmentObject(meetingDetection)
+        
     }
 }
 

@@ -112,7 +112,7 @@ public final class DisplayProvider {
         case "com.hnc.Discord":
             return "Discord"
         default:
-            return "Audio Meeting"
+            return "System Audio"
         }
     }
 }
