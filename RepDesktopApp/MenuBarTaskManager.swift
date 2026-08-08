@@ -15,6 +15,9 @@ import OSLog
 final class MenuBarManager: ObservableObject {
     private init () {}
     
+    let coordinator = AppCoordinator.shared
+    let audioManager = AudioTranscriptionManager.shared
+    
     static let shared = MenuBarManager()
     private var task: Task<Void, Never>?
     
@@ -33,7 +36,7 @@ final class MenuBarManager: ObservableObject {
                 } catch {
                     print("failed to start process listening loop", ErrorDesc.taskError)
                 }
-                try? await Task.sleep(for: .seconds(5))
+                try? await Task.sleep(for: .seconds(3))
             }
         }
     }
@@ -44,7 +47,7 @@ final class MenuBarManager: ObservableObject {
         guard !workspace.isEmpty else { throw ErrorDesc.noRunningProcessError }
         
         for app in workspace {
-            print("running process(s) bundle id: \(app.bundleIdentifier ?? "") | running process(s) name: \(app.localizedName ?? "") ")
+            logger.info("running process(s) bundle id: \(app.bundleIdentifier ?? "")")
         }
     }
     
@@ -59,6 +62,22 @@ final class MenuBarManager: ObservableObject {
     
         guard providerBundleId.contains(appProvider) else { return false }
         return true
+    }
+    
+    
+    func runProviderDetectionLoop() async {
+        while !Task.isCancelled {
+            let isToggled = UserDefaults.standard.object(forKey: "isToggled") as? Bool ?? true
+            do {
+                if isToggled, try await detectProviderWindow() {
+                    coordinator.openDesktop()
+                    try await coordinator.transcribe()
+                }
+            } catch {
+                print("failed to call window detection", ErrorDesc.callsiteError, error)
+            }
+            try? await Task.sleep(for: .seconds(3))
+        }
     }
 }
 

@@ -47,6 +47,8 @@ public final class AudioTranscriptionManager: ObservableObject {
     @Published var audioLevels: CGFloat = 0
     @Published var summarizedNotes: String = ""
     @Published var didStopAudioStream: Bool = false
+    @Published var isRecording = false
+    @Published var isPaused = true
     
     
     private let audioEngine = AVAudioEngine()

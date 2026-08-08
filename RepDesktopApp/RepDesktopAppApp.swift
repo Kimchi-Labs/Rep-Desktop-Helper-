@@ -12,12 +12,16 @@ import UserNotifications
 @main
 struct RepDesktopAppApp: App {
     @StateObject private var meetingDetection = MenuBarManager.shared
-    @StateObject private var audioManager = AudioTranscriptionManager.shared
-    
     
     private let notificationDelegate = LocalNotificationsDelegate.shared
     init() {
         UNUserNotificationCenter.current().delegate = notificationDelegate
+        
+        let meeting = MenuBarManager.shared
+        meeting.startOSProcessTask()
+        Task {
+            await meeting.runProviderDetectionLoop()
+        }
     }
     
     

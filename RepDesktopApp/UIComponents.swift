@@ -139,46 +139,13 @@ struct MenuBarView: View {
     @Binding var isPaused: Bool
     
     @StateObject var audioManager = AudioTranscriptionManager.shared
-    @StateObject var menuBarManager = MenuBarManager.shared
     
     @Environment(\.modelContext) private var context
-   
+    
     @State private var streamingText: String = ""
     
+    let coordinator = AppCoordinator.shared
     
-    func openDesktop() {
-        NSApplication.shared.activate(ignoringOtherApps: true)
-        if let window = NSApplication.shared.windows.first {
-            window.makeKeyAndOrderFront(nil)
-            window.orderFrontRegardless()
-            window.level = .modalPanel
-        }
-    }
-    
-    func quitDesktop() {
-        NSApplication.shared.terminate(nil)
-    }
-    
-    
-    func startOSTask() {
-       let access = Accessibility.requestAccessibilityPermission()
-        print("is permission granted?: \(access)")
-        menuBarManager.startOSProcessTask()
-    }
-    
-    
-    @MainActor
-    func transcribe() async throws {
-        isRecording = true
-        isPaused = false
-        try await AudioTranscriptionHelper.requestMicAccess()
-        let session = try await audioManager.openAudioSession()
-        try await audioManager.startAudioStream(session: session)
-        
-        if isToggled {
-            try await LocalNotificationsDelegate.shared.meetingDetected()
-        }
-    }
     
     var body: some View {
         VStack(alignment: .center, spacing: 10) {
@@ -195,7 +162,7 @@ struct MenuBarView: View {
             
             HStack {
                 Button {
-                    quitDesktop()
+                    coordinator.quitDesktop()
                 } label: {
                     ZStack {
                         Capsule().frame(height: 20)
@@ -237,9 +204,9 @@ struct MenuBarView: View {
                         }
                     }
                 } else {
-                    openDesktop()
+                    coordinator.openDesktop()
                     Task {
-                        try await transcribe()
+                        try await coordinator.transcribe()
                     }
                 }
             } label: {
@@ -280,23 +247,10 @@ struct MenuBarView: View {
             
         }.frame(width: 250, height: 180)
             .transition(.opacity.combined(with: .scale(scale: 0.96)))
-              .animation(.spring(response: 0.25, dampingFraction: 0.8), value: audioManager.isTranscribing)
+            .animation(.spring(response: 0.25, dampingFraction: 0.8), value: audioManager.isTranscribing)
         
             .task {
-                startOSTask()
-            }
-        
-            .task {
-                do {
-                    if isToggled && !isRecording {
-                        if try await menuBarManager.detectProviderWindow() {
-                            openDesktop()
-                            try await transcribe()
-                        }
-                    }
-                } catch {
-                    print("failed to call window detection", ErrorDesc.callsiteError, error)
-                }
+                coordinator.requestAudioAccess()
             }
     }
 }
