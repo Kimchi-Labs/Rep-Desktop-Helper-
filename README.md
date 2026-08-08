@@ -2,6 +2,10 @@
 # Rep Desktop Helper (macOS)
 
 A macOS desktop helper for the audio transcription feature in the Rep mobile app that captures audio from meetings on your Mac and sends notes to Rep on your iPhone.
+<p align="left">
+  <img width="80%" alt="CleanShot 2026-08-08 at 12 46 45@2x" src="https://github.com/user-attachments/assets/ccfbc021-13ae-4e84-80fb-2b843fb65211" />
+</p>
+
 
 ## About
 This companion app runs on macOS and listens to your microphone during meetings. It streams audio to OpenAI Realtime for low-latency transcription and then summarizes the conversation via a Supabase Edge Function. The resulting notes are sent back to your Rep experience so you can reference them from your iPhone.
