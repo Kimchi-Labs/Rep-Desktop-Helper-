@@ -19,6 +19,12 @@ A macOS desktop helper for the audio transcription feature in the Rep mobile app
 ## About
 This companion app runs on macOS and listens to your microphone during meetings. It streams audio to OpenAI Realtime for low-latency transcription and then summarizes the conversation via a Supabase Edge Function. The resulting notes are sent back to your Rep experience so you can reference them from your iPhone.
 
+## Features
+- **Menu Bar Integration:** The app now includes a macOS menu bar extra for quick access to controls, including toggling automatic meeting detection, starting/stopping transcription, and quitting the app.
+- **Automatic Meeting Detection:** When enabled, the app detects active meeting providers (Zoom, Teams, Webex, Chrome, etc.) and can automatically start transcribing audio sessions, based on a persistent toggle.
+- **Modern macOS UI:** Uses translucent "glass" material design, rounded corners, and adaptive color schemes for a seamless desktop experience.
+- **Sign In with Apple:** Secure authentication using Apple ID, with nonce/token handling for privacy and security.
+
 ## Architecture Overview
 The app is built with Swift/SwiftUI and relies on a few core components:
 
@@ -43,6 +49,8 @@ The app is built with Swift/SwiftUI and relies on a few core components:
 - State management
   - `AudioTranscriptionManager` is an `ObservableObject` that owns session state:
     - `isTranscribing`, `isSummarizing`, audio levels, live/finished transcript, and summarized notes.
+  - The persistent toggle for automatic detection is saved to UserDefaults (key: `isToggled`) and respected by the detection loop.
+  - The menu bar UI is implemented in `RepMenuBar`/`MenuBarView`, showing session state and controls.
   - Swift Concurrency (async/await) is used for networking, streaming, and UI updates.
 
 ### Data Flow (high level)
@@ -70,6 +78,8 @@ The app is built with Swift/SwiftUI and relies on a few core components:
   - Buffer resampling, PCM16 conversion, and audio level scaling.
 - `SupabaseClientManager.swift`
   - Handles Supabase client/auth and session retrieval.
+- `UIComponents.swift` — Contains menu bar UI, Sign In view, and waveform indicator.
+- `MenuBarTaskManager.swift` — Manages menu bar logic, process monitoring, and provider window detection.
 
 ## Requirements
 - Xcode 15+ (Xcode 26 recommended)
@@ -83,4 +93,3 @@ The app is built with Swift/SwiftUI and relies on a few core components:
    ```bash
    git clone https://github.com/Kimchi-Labs/Rep-Desktop-Helper-.git
    cd Rep-Desktop-Helper-
-
