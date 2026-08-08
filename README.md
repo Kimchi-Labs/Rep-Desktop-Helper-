@@ -3,16 +3,37 @@
 
 A macOS desktop helper for the audio transcription feature in the Rep mobile app that captures audio from meetings on your Mac and sends notes to Rep on your iPhone.
 
-<img width="1122" height="576" alt="CleanShot 2026-07-05 at 11 17 32@2x" src="https://github.com/user-attachments/assets/ff9cb062-defe-462e-ada3-ae954a848371" />
-
 ## About
 This companion app runs on macOS and listens to your microphone during meetings. It streams audio to OpenAI Realtime for low-latency transcription and then summarizes the conversation via a Supabase Edge Function. The resulting notes are sent back to your Rep experience so you can reference them from your iPhone.
+
+## Features
+<div align="center">
+  <img width="90%" alt="CleanShot 2026-08-08 at 12 37 33@2x" src="https://github.com/user-attachments/assets/8e8f43a8-ba53-47ca-a856-65e0e112d611" />
+</div>
+
+<br />
+
+<table>
+  <tr>
+    <td width="34%" valign="top">
+      <img width="100%" alt="CleanShot 2026-08-08 at 12 36 00@2x" src="https://github.com/user-attachments/assets/8104a93a-3230-4ee7-b182-32b5a204d187" />
+    </td>
+    <td width="66%" valign="top">
+
+- **Menu Bar Integration:** The app now includes a macOS menu bar extra for quick access to controls, including toggling automatic meeting detection, starting/stopping transcription, and quitting the app.
+- **Automatic Meeting Detection:** When enabled, the app detects active meeting providers (Zoom, Teams, Webex, Chrome, etc.) and can automatically start transcribing audio sessions, based on a persistent toggle.
+- **Modern macOS UI:** Uses translucent "glass" material design, rounded corners, and adaptive color schemes for a seamless desktop experience.
+- **Sign In with Apple:** Secure authentication using Apple ID, with nonce/token handling for privacy and security.
+
+    </td>
+  </tr>
+</table>
 
 ## Architecture Overview
 The app is built with Swift/SwiftUI and relies on a few core components:
 
 - Audio capture and processing
-  - captures microphone input.
+  - `AVAudioEngine` captures microphone input.
   - Audio buffers are resampled to 24 kHz mono and converted to PCM16 for efficient transport.
   - Scaled RMS is used to drive UI audio level indicators.
 
@@ -32,6 +53,8 @@ The app is built with Swift/SwiftUI and relies on a few core components:
 - State management
   - `AudioTranscriptionManager` is an `ObservableObject` that owns session state:
     - `isTranscribing`, `isSummarizing`, audio levels, live/finished transcript, and summarized notes.
+  - The persistent toggle for automatic detection is saved to UserDefaults (key: `isToggled`) and respected by the detection loop.
+  - The menu bar UI is implemented in `RepMenuBar`/`MenuBarView`, showing session state and controls.
   - Swift Concurrency (async/await) is used for networking, streaming, and UI updates.
 
 ### Data Flow (high level)
@@ -40,7 +63,7 @@ The app is built with Swift/SwiftUI and relies on a few core components:
 - Open WebSocket to OpenAI Realtime.
 
 2) Stream audio → text
-- Capture mic audio 
+- Capture mic audio via `AVAudioEngine`.
 - Resample to 24 kHz mono, convert to PCM16.
 - Send chunks over WebSocket as `input_audio_buffer.append`.
 - Receive transcription deltas (update UI) and completion events (append to finished transcript).
@@ -59,6 +82,8 @@ The app is built with Swift/SwiftUI and relies on a few core components:
   - Buffer resampling, PCM16 conversion, and audio level scaling.
 - `SupabaseClientManager.swift`
   - Handles Supabase client/auth and session retrieval.
+- `UIComponents.swift` — Contains menu bar UI, Sign In view, and waveform indicator.
+- `MenuBarTaskManager.swift` — Manages menu bar logic, process monitoring, and provider window detection.
 
 ## Requirements
 - Xcode 15+ (Xcode 26 recommended)
