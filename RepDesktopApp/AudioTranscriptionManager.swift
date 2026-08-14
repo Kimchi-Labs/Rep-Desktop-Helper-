@@ -199,6 +199,9 @@ public final class AudioTranscriptionManager: ObservableObject {
     
     public func startAudioStream(session: AudioSession.SessionData) async throws {
         do {
+            liveTranscription.removeAll()
+            finishedTranscript.removeAll()
+            
             let ephemeralSecret: String = session.value
             guard !ephemeralSecret.isEmpty else { throw ErrorDesc.nilValue }
             
@@ -251,7 +254,6 @@ public final class AudioTranscriptionManager: ObservableObject {
             
             await MainActor.run {
                 self.didStopAudioStream = true
-                self.isTranscribing = false
                 self.isSummarizing = true
             }
             
@@ -262,12 +264,19 @@ public final class AudioTranscriptionManager: ObservableObject {
                 let finished: String = finishedTranscript.trimmingCharacters(in: .whitespacesAndNewlines)
                 
                 if didStopAudioStream && !finished.isEmpty {
-                    guard !finished.isEmpty else { return await MainActor.run { isSummarizing = false }}
                     
                     await MainActor.run { isSummarizing = true }
-                    
                     _ = try await summarizeFinishedTranscript(context: context, onChunk: onChunk)
-                    await MainActor.run { isSummarizing = false }
+                    
+                    await MainActor.run {
+                        isSummarizing = false
+                        isTranscribing = false
+                    }
+                    
+                    finishedTranscript.removeAll()
+                    liveTranscription.removeAll()
+                    webSocketTask?.cancel(with: .normalClosure, reason: .none)
+                    webSocketTask = nil
                     return
                 }
                 
@@ -279,11 +288,16 @@ public final class AudioTranscriptionManager: ObservableObject {
             if didStopAudioStream && !live.isEmpty {
                 finishedTranscript = liveTranscription
                 _ = try await summarizeFinishedTranscript(context: context, onChunk: onChunk)
+                
+                isSummarizing = false
+                isTranscribing = false
+                finishedTranscript.removeAll()
+                liveTranscription.removeAll()
+                
+                webSocketTask?.cancel(with: .normalClosure, reason: .none)
+                webSocketTask = nil
                 return
             }
-            
-            webSocketTask?.cancel(with: .normalClosure, reason: .none)
-            webSocketTask = nil
             
         } catch {
             print("failed to summarize finished transcript", ErrorDesc.callsiteError, error)
