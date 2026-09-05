@@ -18,6 +18,7 @@ struct ContentView: View {
     @State var isPaused: Bool = false
     @State private var streamingText: String = ""
     @State private var appProvider: String = ""
+    @State private var isMoreCreditsNeeded: Bool = false
     
     private var transcriptNotesGenerating: String = "Sending Your Notes To Your iPhone ..."
     
@@ -84,7 +85,6 @@ struct ContentView: View {
                         audioManager.isTranscribing.toggle()
                         Task {
                             if audioManager.isTranscribing {
-                                //let desktopAccessToken = try await AuthenticatePairing.desktopAuthPoller()
                                 isRecording = true
                                 isPaused = false
                                 try await AudioTranscriptionHelper.requestMicAccess()
@@ -120,7 +120,7 @@ struct ContentView: View {
                                     .foregroundStyle(Color.kimchilabsReversed)
                                 
                                 HStack(alignment: .bottom) {
-                                    Text("Start Transcribing").font(.system(size: 12, design: .rounded)).fontWeight(.regular)
+                                    Text(isMoreCreditsNeeded ? "Upgrade Plan" : "Start Transcribing").font(.system(size: 12, design: .rounded)).fontWeight(.regular)
                                         .foregroundStyle(Color.kimchilabsBackground)
                                     
                                     Image(systemName: "microphone").foregroundStyle(Color.kimchilabsBackground)
@@ -128,6 +128,7 @@ struct ContentView: View {
                             }
                         }
                     }.buttonStyle(.plain)
+                    .disabled(isMoreCreditsNeeded)
                     
                 }.padding(.leading)
                     .padding(.bottom)
