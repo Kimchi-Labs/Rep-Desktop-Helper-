@@ -106,6 +106,7 @@ final class AudioTranscriptionHelper {
     
     public static func stopSystemStream() async throws {
         do {
+            defer { ScreenAudio.clearCaptureSocket() }
             guard let stream = ScreenAudio.stream else { return }
             try stream.removeStreamOutput(ScreenAudio.screenAudio, type: .audio)
             try await stream.stopCapture()
@@ -116,6 +117,18 @@ final class AudioTranscriptionHelper {
             print("failed to stop system stream", ErrorDesc.audioError, error)
         }
     }
+    
+    
+    public static func sendAudioChunk(_ pcm16AudioData: Data, webSocketTask: URLSessionWebSocketTask?) async throws {
+        guard let webSocketTask else { throw ErrorDesc.webSocketError }
+        
+        let base64Audio = pcm16AudioData.base64EncodedString()
+        let event: [String: Any] = ["type": "input_audio_buffer.append", "audio": base64Audio]
+        
+        let jsonData = try JSONSerialization.data(withJSONObject: event)
+        guard let jsonString = String(data: jsonData, encoding: .utf8) else { throw ErrorDesc.encodeError }
+        
+        try await webSocketTask.send(.string(jsonString))
+        print("sent audio chunk ✅")
+    }
 }
-
-

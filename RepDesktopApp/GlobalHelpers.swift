@@ -16,15 +16,17 @@ public final class ScreenAudio: NSObject, SCStreamOutput {
     
     static let screenAudio = ScreenAudio()
     private static let queue = DispatchQueue(label: "rep.desktop.helper", qos: .userInitiated)
+    private var webSocketTask: URLSessionWebSocketTask?
     public static var stream: SCStream?
+    private let system = SystemAudioTranscriptionManager()
     
     public func stream(_ stream: SCStream, didOutputSampleBuffer sampleBuffer: CMSampleBuffer, of type: SCStreamOutputType) {
-        guard type == .audio else { return }
+        guard type == .audio, let webSocketTask else { return }
         print("got screen/system audio buffer")
         
         Task {
             do {
-                let _ = try await AudioTranscriptionManager.shared.startSystemCapture(from: sampleBuffer)
+                let _ = try await system.startSystemCapture(from: sampleBuffer, webSocketTask: webSocketTask)
                 
                 print("system audio input called")
             } catch {
@@ -34,7 +36,9 @@ public final class ScreenAudio: NSObject, SCStreamOutput {
     }
     
     
-    public static func configScreenAudioCapture() async throws {
+    public static func configScreenAudioCapture(webSocketTask: URLSessionWebSocketTask) async throws {
+        screenAudio.webSocketTask = webSocketTask
+
         let config = SCStreamConfiguration()
        
         config.sampleRate = 24_000
@@ -57,6 +61,11 @@ public final class ScreenAudio: NSObject, SCStreamOutput {
         } catch {
             print("failed to get audio screen capture output", ErrorDesc.audioError, error)
         }
+    }
+
+
+    public static func clearCaptureSocket() {
+        screenAudio.webSocketTask = nil
     }
 }
 

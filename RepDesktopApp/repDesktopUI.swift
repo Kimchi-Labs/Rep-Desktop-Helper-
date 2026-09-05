@@ -128,7 +128,7 @@ struct ContentView: View {
                             }
                         }
                     }.buttonStyle(.plain)
-                    .disabled(isMoreCreditsNeeded)
+                        .disabled(isMoreCreditsNeeded)
                     
                 }.padding(.leading)
                     .padding(.bottom)
@@ -150,6 +150,8 @@ struct ContentView: View {
             }
     }
 }
+
+
 
 #Preview {
     ContentView()
