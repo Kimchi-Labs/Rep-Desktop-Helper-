@@ -22,6 +22,7 @@ struct ContentView: View {
     private var transcriptNotesGenerating: String = "Sending Your Notes To Your iPhone ..."
     
     @StateObject var audioManager = AudioTranscriptionManager.shared
+
     
     var body: some View {
         VStack {
@@ -128,7 +129,7 @@ struct ContentView: View {
                             }
                         }
                     }.buttonStyle(.plain)
-                        .disabled(audioManager.isMoreCreditsNeeded)
+                        .disabled(audioManager.isTranscriptionButtonDisabled)
                 }.padding(.leading)
                     .padding(.bottom)
                 Spacer()
@@ -146,6 +147,11 @@ struct ContentView: View {
                     
                     try? await Task.sleep(for: .milliseconds(500))
                 }
+            }
+        
+            .task {
+                CreditsManager.shared.refreshUserCredits()
+                print("credits refreshed")
             }
     }
 }

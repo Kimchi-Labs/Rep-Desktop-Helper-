@@ -39,6 +39,9 @@ public final class AudioTranscriptionManager: ObservableObject {
     @Published var isPaused = true
     @Published var isMoreCreditsNeeded: Bool = false
     
+    var isTranscriptionButtonDisabled: Bool {
+        isMoreCreditsNeeded
+    }
     
     private let audioEngine = AVAudioEngine()
     
@@ -98,7 +101,7 @@ public final class AudioTranscriptionManager: ObservableObject {
     
     
     public func openAudioSession() async throws -> AudioSession.SessionData {
-        let url: URL = URL(string: "https://oxgumwqxnghqccazzqvw.supabase.co/functions/v1/ai_summerizer-chat-dev")!  //TODO: change back to prod endpoint
+        let url: URL = URL(string: "https://oxgumwqxnghqccazzqvw.supabase.co/functions/v1/ai_summerizer-chat")!  
         let key: UUID = idempotentKey ?? UUID()
         idempotentKey = key
         var urlRequest: URLRequest = URLRequest(url: url)
@@ -120,8 +123,7 @@ public final class AudioTranscriptionManager: ObservableObject {
             let body = String(data: data, encoding: .utf8)
             print("SESSION RESPONSE \(urlResponse.statusCode): \(body ?? "")")
             
-            if urlResponse.statusCode == 402 { throw PaymentStoreError.insufficientTokens }
-            guard (200...299).contains(urlResponse.statusCode) else { throw ErrorDesc.urlResponseError }
+            try CreditsManager.shared.applyCreditResponse(statusCode: urlResponse.statusCode)
             
             let decodeSession = try JSONDecoder().decode(AudioSession.self, from: data)
             isMoreCreditsNeeded = false
@@ -138,34 +140,11 @@ public final class AudioTranscriptionManager: ObservableObject {
     }
     
     
-    private func sendAudioBillingAction(_ action: String, body: [String: Any]) async throws {
-        let url: URL = URL(string: "https://oxgumwqxnghqccazzqvw.supabase.co/functions/v1/ai_summerizer-chat-dev")!
-        let session = try await supabaseDBClient.auth.session
-        guard !session.isExpired else { throw ErrorDesc.sessionError }
-        
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("Bearer \(session.accessToken)", forHTTPHeaderField: "Authorization")
-        request.setValue(action, forHTTPHeaderField: "x-rep-action")
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.httpBody = try JSONSerialization.data(withJSONObject: body)
-        
-        let (data, response) = try await URLSession.shared.data(for: request)
-        guard let httpResponse = response as? HTTPURLResponse else { throw ErrorDesc.serverError }
-        
-        guard (200...299).contains(httpResponse.statusCode) else {
-            let responseBody = String(data: data, encoding: .utf8) ?? ""
-            print("Audio billing action \(action) failed (\(httpResponse.statusCode)): \(responseBody)")
-            throw ErrorDesc.urlResponseError
-        }
-    }
-    
-    
     private func finalizeCurrentAudioSession() async throws {
         guard let key = idempotentKey, let startedAt = audioStartedAt else { throw ErrorDesc.nilValue }
         
         let durationSeconds = max(Date().timeIntervalSince(startedAt), 1)
-        try await sendAudioBillingAction("audio_finalize", body: ["idempotency_key": key.uuidString, "duration_seconds": durationSeconds])
+        try await CreditsManager.shared.sendAudioBillingAction("audio_finalize", body: ["idempotency_key": key.uuidString, "duration_seconds": durationSeconds])
         
         idempotentKey = nil
         audioStartedAt = nil
@@ -175,7 +154,7 @@ public final class AudioTranscriptionManager: ObservableObject {
     private func releaseCurrentAudioSession(reason: String) async throws {
         guard let key = idempotentKey else { return }
         
-        try await sendAudioBillingAction("audio_release", body: ["idempotency_key": key.uuidString, "reason": reason])
+        try await CreditsManager.shared.sendAudioBillingAction("audio_release", body: ["idempotency_key": key.uuidString, "reason": reason])
         
         idempotentKey = nil
         audioStartedAt = nil
@@ -398,7 +377,7 @@ public final class AudioTranscriptionManager: ObservableObject {
         print("FULL TRANSCRIPT: \(fullTranscript)")
         await MainActor.run { isSummarizing = false }
         
-        let openAIRequest: URL = URL(string: "https://oxgumwqxnghqccazzqvw.supabase.co/functions/v1/ai_summerizer-chat-dev")!  //TODO: change back to prod after
+        let openAIRequest: URL = URL(string: "https://oxgumwqxnghqccazzqvw.supabase.co/functions/v1/ai_summerizer-chat")!
         var urlRequest: URLRequest = URLRequest(url: openAIRequest)
         
         let session = try await supabaseDBClient.auth.session
@@ -430,7 +409,7 @@ public final class AudioTranscriptionManager: ObservableObject {
         do {
             let (bytes, response) = try await URLSession.shared.bytes(for: urlRequest)
             guard let httpResponse = response as? HTTPURLResponse else { throw ErrorDesc.serverError }
-            if httpResponse.statusCode == 402 { throw PaymentStoreError.insufficientTokens }
+            try CreditsManager.shared.applyCreditResponse(statusCode: httpResponse.statusCode)
             print("==========\n status code: \(httpResponse.statusCode)")
             
             for try await stream in bytes.lines {

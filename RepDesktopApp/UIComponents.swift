@@ -244,7 +244,7 @@ struct MenuBarView: View {
                     }
                 }
             }.buttonStyle(.plain)
-                .disabled(audioManager.isMoreCreditsNeeded)
+                .disabled(audioManager.isTranscriptionButtonDisabled)
             
         }.frame(width: 250, height: 180)
             .transition(.opacity.combined(with: .scale(scale: 0.96)))
@@ -253,6 +253,12 @@ struct MenuBarView: View {
             .task {
                 coordinator.requestAudioAccess()
             }
+        
+            .task {
+                CreditsManager.shared.refreshUserCredits()
+                print("credits refreshed")
+            }
+        
     }
 }
 

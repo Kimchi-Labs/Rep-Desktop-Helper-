@@ -4,6 +4,8 @@
 //
 //  Created by alex haidar on 7/4/26.
 //
+import Foundation
+
 
 public struct AudioSession: Decodable {             ///for audio transcription
     public let session: SessionData
@@ -29,9 +31,16 @@ public struct TranscriptionStream: Decodable {
     
 }
 
-public struct DesktopPairing: Decodable {
-    let desktop_access_token: String?
-    let user_id: String?
+struct BillingBucketCredits: Decodable, Sendable {
+    let allowance: Decimal
+    let consumed: Decimal
+    let reserved: Decimal
+
+    var remainingCredits: Decimal {
+        max(allowance - consumed - reserved, 0)
+    }
+
+    var hasAvailableCredits: Bool {
+        remainingCredits > 0
+    }
 }
-
-
