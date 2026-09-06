@@ -84,22 +84,30 @@ struct ContentView: View {
                     Button {
                         audioManager.isTranscribing.toggle()
                         Task {
-                            if audioManager.isTranscribing {
-                                try await AudioTranscriptionHelper.stopSystemStream()
-                                isRecording = true
-                                isPaused = false
-                                try await AudioTranscriptionHelper.requestMicAccess()
-                                let session = try await audioManager.openAudioSession()
-                                try await audioManager.startAudioStream(session: session)
-                                
-                            } else {
-                                try await AudioTranscriptionHelper.stopSystemStream()
-                                try await audioManager.stopAudioStream(context: context) { delta in
-                                    isRecording = false
-                                    isPaused = true
-                                    streamingText += delta
-                                    audioManager.liveTranscription.removeAll()
+                            do {
+                                if audioManager.isTranscribing {
+                                    try await AudioTranscriptionHelper.stopSystemStream()
+                                    isRecording = true
+                                    isPaused = false
+                                    try await AudioTranscriptionHelper.requestMicAccess()
+                                    let session = try await audioManager.openAudioSession()
+                                    try await audioManager.startAudioStream(session: session)
+
+                                } else {
+                                    try await AudioTranscriptionHelper.stopSystemStream()
+                                    try await audioManager.stopAudioStream(context: context) { delta in
+                                        isRecording = false
+                                        isPaused = true
+                                        streamingText += delta
+                                        audioManager.liveTranscription.removeAll()
+                                    }
                                 }
+
+                            } catch {
+                                audioManager.isTranscribing = false
+                                isRecording = false
+                                isPaused = true
+                                print("failed to start audio flow", ErrorDesc.callsiteError, error)
                             }
                         }
                     } label: {
