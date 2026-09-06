@@ -14,8 +14,6 @@ final class SystemAudioTranscriptionManager: ObservableObject {
     public init() {}
     
     
-    @Published var audioLevels: CGFloat = 0
-    
     public func startSystemCapture(from sampleBuffer: CMSampleBuffer, webSocketTask: URLSessionWebSocketTask) async throws -> AVAudioPCMBuffer {
         guard let resampleFormat = AVAudioFormat(commonFormat: .pcmFormatFloat32, sampleRate: 24_000, channels: 1, interleaved: false) else { throw ErrorDesc.audioError }
         
@@ -42,7 +40,7 @@ final class SystemAudioTranscriptionManager: ObservableObject {
             let getAudioLevels = AudioTranscriptionHelper.scaleAudioWaves(rms: pcmRms)
             
             Task { @MainActor in
-                self.audioLevels = CGFloat(getAudioLevels)
+                AudioTranscriptionManager.shared.audioLevels = CGFloat(getAudioLevels)
             }
             
             Task {
@@ -52,3 +50,4 @@ final class SystemAudioTranscriptionManager: ObservableObject {
         return fromPcmBuffer
     }
 }
+    

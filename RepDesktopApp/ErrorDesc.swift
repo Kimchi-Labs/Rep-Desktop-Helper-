@@ -37,8 +37,6 @@ public enum SupabaseError: LocalizedError {
     case nilDataError
 }
 
-
-
 public typealias OpenAIStreamMeta = StreamEvent
 
 public struct StreamEvent: Decodable {
@@ -50,5 +48,16 @@ public struct StreamEvent: Decodable {
         public let id: String
         public let status: String
         public let model: String
+    }
+}
+
+enum PaymentStoreError: LocalizedError, Sendable {
+    case insufficientTokens
+    
+    var errorDescription: String? {
+        switch self {
+        case .insufficientTokens:
+            return "more credits needed"
+        }
     }
 }

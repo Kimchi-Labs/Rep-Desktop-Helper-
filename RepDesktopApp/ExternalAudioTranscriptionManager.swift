@@ -6,7 +6,8 @@
 //
 
 /* All requests to the supabase edge functions for the Voice
- transcription with External Audio mics will be handled here */
+ transcription with External Audio mics will be handled here, also
+ contains some shared functions with the system audio function */
 import Foundation
 import Supabase
 import SwiftData
@@ -14,14 +15,15 @@ import Combine
 @preconcurrency import AVFoundation
 import ScreenCaptureKit
 
-//TODO: enable external audio mics as a option for rep desktop, not only system audio
+//TODO: enable external audio mics as a option for rep desktop, not only system audio, also move shared functions into helper
 
 @MainActor
 public final class AudioTranscriptionManager: ObservableObject {
     private init() {}
     public static let shared = AudioTranscriptionManager()
     
-    
+    private(set) var idempotentKey: UUID?
+    private var audioStartedAt: Date?
     private var webSocketTask: URLSessionWebSocketTask?
     typealias MessageTranscription = URLSessionWebSocketTask.Message
     
@@ -35,6 +37,7 @@ public final class AudioTranscriptionManager: ObservableObject {
     @Published var didStopAudioStream: Bool = false
     @Published var isRecording = false
     @Published var isPaused = true
+    @Published var isMoreCreditsNeeded: Bool = false
     
     
     private let audioEngine = AVAudioEngine()
@@ -96,6 +99,8 @@ public final class AudioTranscriptionManager: ObservableObject {
     
     public func openAudioSession() async throws -> AudioSession.SessionData {
         let url: URL = URL(string: "https://oxgumwqxnghqccazzqvw.supabase.co/functions/v1/ai_summerizer-chat-dev")!  //TODO: change back to prod endpoint
+        let key: UUID = idempotentKey ?? UUID()
+        idempotentKey = key
         var urlRequest: URLRequest = URLRequest(url: url)
         
         let session = try await supabaseDBClient.auth.session
@@ -106,25 +111,74 @@ public final class AudioTranscriptionManager: ObservableObject {
         
         urlRequest.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         urlRequest.setValue("audio", forHTTPHeaderField: "x-rep-action")
+        urlRequest.setValue(key.uuidString, forHTTPHeaderField: "x-idempotency-key")
         urlRequest.httpMethod = "POST"
         
         do {
             let (data, response) = try await URLSession.shared.data(for: urlRequest)
-            print("SESSION RESPONSE ✅: \(response)")
-            
             guard let urlResponse = response as? HTTPURLResponse else { throw ErrorDesc.serverError }
             let body = String(data: data, encoding: .utf8)
-            print("body: \(body ?? "")")
+            print("SESSION RESPONSE \(urlResponse.statusCode): \(body ?? "")")
             
+            if urlResponse.statusCode == 402 { throw PaymentStoreError.insufficientTokens }
             guard (200...299).contains(urlResponse.statusCode) else { throw ErrorDesc.urlResponseError }
             
             let decodeSession = try JSONDecoder().decode(AudioSession.self, from: data)
+            isMoreCreditsNeeded = false
             return decodeSession.session
+            
+        } catch PaymentStoreError.insufficientTokens {
+            isMoreCreditsNeeded = true
+            throw PaymentStoreError.insufficientTokens
             
         } catch {
             print("error opening audio session", ErrorDesc.sessionError, error)
+            throw error
         }
-        throw ErrorDesc.sessionError
+    }
+    
+    
+    private func sendAudioBillingAction(_ action: String, body: [String: Any]) async throws {
+        let url: URL = URL(string: "https://oxgumwqxnghqccazzqvw.supabase.co/functions/v1/ai_summerizer-chat-dev")!
+        let session = try await supabaseDBClient.auth.session
+        guard !session.isExpired else { throw ErrorDesc.sessionError }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("Bearer \(session.accessToken)", forHTTPHeaderField: "Authorization")
+        request.setValue(action, forHTTPHeaderField: "x-rep-action")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try JSONSerialization.data(withJSONObject: body)
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse else { throw ErrorDesc.serverError }
+        
+        guard (200...299).contains(httpResponse.statusCode) else {
+            let responseBody = String(data: data, encoding: .utf8) ?? ""
+            print("Audio billing action \(action) failed (\(httpResponse.statusCode)): \(responseBody)")
+            throw ErrorDesc.urlResponseError
+        }
+    }
+    
+    
+    private func finalizeCurrentAudioSession() async throws {
+        guard let key = idempotentKey, let startedAt = audioStartedAt else { throw ErrorDesc.nilValue }
+        
+        let durationSeconds = max(Date().timeIntervalSince(startedAt), 1)
+        try await sendAudioBillingAction("audio_finalize", body: ["idempotency_key": key.uuidString, "duration_seconds": durationSeconds])
+        
+        idempotentKey = nil
+        audioStartedAt = nil
+    }
+    
+    
+    private func releaseCurrentAudioSession(reason: String) async throws {
+        guard let key = idempotentKey else { return }
+        
+        try await sendAudioBillingAction("audio_release", body: ["idempotency_key": key.uuidString, "reason": reason])
+        
+        idempotentKey = nil
+        audioStartedAt = nil
     }
     
     
@@ -172,10 +226,21 @@ public final class AudioTranscriptionManager: ObservableObject {
                 try await transcriptionEventListener(urlRequest: urlRequest)
             }
             
-            try? await self.audioCaptureRunner(.system)
+            try await self.audioCaptureRunner(.system)
+            audioStartedAt = Date()
             
         } catch {
             print("failed to start stream to openai transcription endpoint ❗️", ErrorDesc.webSocketError, error)
+            isTranscribing = false
+            webSocketTask?.cancel(with: .goingAway, reason: nil)
+            webSocketTask = nil
+            
+            do {
+                try await releaseCurrentAudioSession(reason: "audio_session_start_failed")
+            } catch {
+                print("failed to release audio reservation after startup failure:", error)
+            }
+            throw error
         }
     }
     
@@ -201,6 +266,8 @@ public final class AudioTranscriptionManager: ObservableObject {
             audioEngine.inputNode.removeTap(onBus: 0)
             audioEngine.stop()
             print("socket fully shut for this session")
+            
+            try await finalizeCurrentAudioSession()
             
             await MainActor.run {
                 self.didStopAudioStream = true
@@ -251,6 +318,7 @@ public final class AudioTranscriptionManager: ObservableObject {
             
         } catch {
             print("failed to summarize finished transcript", ErrorDesc.callsiteError, error)
+            throw error
         }
     }
     
@@ -322,7 +390,8 @@ public final class AudioTranscriptionManager: ObservableObject {
     }
     
     
-    public func summarizeFinishedTranscript(context: ModelContext, onChunk: @escaping(String) async -> Void) async throws -> String {
+    public func summarizeFinishedTranscript(context: ModelContext, onChunk: @escaping(String) async -> Void) async throws -> String {  ///shared
+        let idempotentKey: UUID = UUID()
         guard !finishedTranscript.isEmpty else { throw ErrorDesc.nilValue }
         
         let fullTranscript: String = finishedTranscript.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -342,6 +411,7 @@ public final class AudioTranscriptionManager: ObservableObject {
         urlRequest.setValue("Bearer \(supabaseAccessToken)", forHTTPHeaderField: "Authorization")
         urlRequest.setValue("chat", forHTTPHeaderField: "x-rep-action")
         urlRequest.setValue("desktop-helper", forHTTPHeaderField: "x-rep-source")
+        urlRequest.setValue(idempotentKey.uuidString, forHTTPHeaderField: "x-idempotency-key")
         urlRequest.httpMethod = "POST"
         
         var multipartReqBody = Data()
@@ -360,6 +430,7 @@ public final class AudioTranscriptionManager: ObservableObject {
         do {
             let (bytes, response) = try await URLSession.shared.bytes(for: urlRequest)
             guard let httpResponse = response as? HTTPURLResponse else { throw ErrorDesc.serverError }
+            if httpResponse.statusCode == 402 { throw PaymentStoreError.insufficientTokens }
             print("==========\n status code: \(httpResponse.statusCode)")
             
             for try await stream in bytes.lines {
@@ -383,6 +454,10 @@ public final class AudioTranscriptionManager: ObservableObject {
             
             try await LocalNotificationsDelegate.shared.requestLocalNotificationPermission()
             try await LocalNotificationsDelegate.shared.notifyNotesSentToMobile()
+            
+        } catch PaymentStoreError.insufficientTokens {
+            isMoreCreditsNeeded = true
+            throw PaymentStoreError.insufficientTokens
             
         } catch {
             print("failed to return response ❗️", ErrorDesc.decodeError, error)

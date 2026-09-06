@@ -143,7 +143,6 @@ struct MenuBarView: View {
     @Environment(\.modelContext) private var context
     
     @State private var streamingText: String = ""
-    @State private var isMoreCreditsNeeded: Bool = false
     
     let coordinator = AppCoordinator.shared
     
@@ -157,7 +156,6 @@ struct MenuBarView: View {
                 Toggle("", isOn: $isToggled)
                     .toggleStyle(.switch)
                     .labelsHidden()
-                    .disabled(isMoreCreditsNeeded)
             }
             
             Divider().padding(.horizontal)
@@ -235,7 +233,7 @@ struct MenuBarView: View {
                             .foregroundStyle(Color.kimchilabsReversed)
                         
                         HStack(spacing: 5) {
-                            Text(isMoreCreditsNeeded ? "Upgrade Plan" : "Start New Transcription")
+                            Text(audioManager.isMoreCreditsNeeded ? "Upgrade Plan" : "Start New Transcription")
                                 .font(.system(size: 12, design: .rounded)).fontWeight(.regular)
                                 .foregroundStyle(Color.kimchilabsBackground)
                             
@@ -246,7 +244,7 @@ struct MenuBarView: View {
                     }
                 }
             }.buttonStyle(.plain)
-                .disabled(isMoreCreditsNeeded)
+                .disabled(audioManager.isMoreCreditsNeeded)
             
         }.frame(width: 250, height: 180)
             .transition(.opacity.combined(with: .scale(scale: 0.96)))

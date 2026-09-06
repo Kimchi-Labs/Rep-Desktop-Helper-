@@ -4,7 +4,8 @@
 //
 //  Created by alex haidar on 7/4/26.
 //
-/* Static data helper functions and class for AI Audio Transcription */
+/* Static data helper functions and classes that are
+   shared between system and external audio managers */
 import Foundation
 import SwiftData
 @preconcurrency import AVFoundation
