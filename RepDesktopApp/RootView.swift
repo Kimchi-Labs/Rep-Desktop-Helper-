@@ -9,18 +9,21 @@ import SwiftUI
 
 
 struct RootView: View {
-    @StateObject private var auth = AuthBackend()
+    @StateObject private var auth = AuthBackend.shared
 
     var body: some View {
         Group {
-            if auth.isSignedIn {
-                ContentView()
+            if auth.isShowingSignIn && !auth.isSignedIn {
+                AuthView(auth: auth)
             } else {
-                AuthView()
+                ContentView()
             }
         }
         .task {
             await auth.loadSession()
         }
+        .contentShape(Rectangle())
+        .gesture(WindowDragGesture())
+        .allowsWindowActivationEvents()
     }
 }

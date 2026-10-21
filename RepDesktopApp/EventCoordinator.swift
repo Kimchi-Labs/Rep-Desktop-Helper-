@@ -40,6 +40,11 @@ final class AppCoordinator {
     
     @MainActor
     func transcribe() async throws {
+        guard AuthBackend.shared.isSignedIn else {
+            AuthBackend.shared.requestSignIn()
+            openDesktop()
+            return
+        }
         guard !audioManager.isTranscribing else { return }
         
         audioManager.isRecording = true

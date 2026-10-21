@@ -9,7 +9,17 @@ import Combine
 
 public final class AuthViewController: NSViewController {
     private let appleSignIn = ASAuthorizationAppleIDButton(type: .signIn, style: .black)
-    private let backend = AuthBackend()
+    private let backend: AuthBackend
+
+    public init(backend: AuthBackend) {
+        self.backend = backend
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    @available(*, unavailable)
+    required init(coder: NSCoder) {
+        fatalError("storyboard initialization failed")
+    }
 
     private var currentNonce: String?
 
@@ -74,17 +84,28 @@ extension AuthViewController: ASAuthorizationControllerPresentationContextProvid
 }
 
 public final class AuthBackend: ObservableObject {
+    public static let shared = AuthBackend()
     @Published public var isSignedIn: Bool = false
-    
+    @Published public var isShowingSignIn: Bool = false
+
+    public func requestSignIn() {
+        guard !isSignedIn else { return }
+        isShowingSignIn = true
+    }
+
+    public func dismissSignIn() {
+        isShowingSignIn = false
+    }
+
     public func loadSession() async {
         do {
             _ = try await supabaseDBClient.auth.session
-            isSignedIn = true
+            await MainActor.run { isSignedIn = true; isShowingSignIn = false }
         } catch {
-            isSignedIn = false
+            await MainActor.run { isSignedIn = false }
         }
     }
-    
+
     public func handleSuccessfulLogin(_ authorization: ASAuthorization, nonce: String?) {
         guard let userCredential = authorization.credential as? ASAuthorizationAppleIDCredential else {
             return
@@ -97,9 +118,10 @@ public final class AuthBackend: ObservableObject {
             Task {
                 do {
                     let session = try await supabaseDBClient.auth.signInWithIdToken(credentials: OpenIDConnectCredentials(provider: .apple, idToken: tokenString, nonce: nonce))
-                    
+
                     await MainActor.run {
                         self.isSignedIn = true
+                        self.isShowingSignIn = false
                     }
 
                     print("token exchange successful", session)
@@ -113,11 +135,19 @@ public final class AuthBackend: ObservableObject {
     public func handleLoginError(with error: Error) {
         print("Could not authenticate: \(error.localizedDescription)")
     }
+
+    public func signOut() async throws {
+        try await supabaseDBClient.auth.signOut()
+        await MainActor.run { isSignedIn = false; isShowingSignIn = false }
+    }
+
 }
 
 public struct AuthControllerRepresentable: NSViewControllerRepresentable {
+    @ObservedObject var backend: AuthBackend
+
     public func makeNSViewController(context: Context) -> AuthViewController {
-        AuthViewController()
+        AuthViewController(backend: backend)
     }
 
     public func updateNSViewController(_ nsViewController: AuthViewController, context: Context) {}

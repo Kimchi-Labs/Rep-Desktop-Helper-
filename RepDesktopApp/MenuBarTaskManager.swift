@@ -69,7 +69,7 @@ final class MenuBarManager: ObservableObject {
         while !Task.isCancelled {
             let isToggled = UserDefaults.standard.object(forKey: "isToggled") as? Bool ?? true
             do {
-                if isToggled, try await detectProviderWindow() {
+                if isToggled, AuthBackend.shared.isSignedIn, try await detectProviderWindow() {
                     coordinator.openDesktop()
                     try await coordinator.transcribe()
                 }
@@ -80,4 +80,3 @@ final class MenuBarManager: ObservableObject {
         }
     }
 }
-

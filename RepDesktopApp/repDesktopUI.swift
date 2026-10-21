@@ -7,23 +7,25 @@
 
 import SwiftUI
 import SwiftData
+import Supabase
 
 
 struct ContentView: View {
     @Environment(\.dismiss) var dismissDesktop
     @Environment(\.modelContext) private var context
-    
+
     @State var audioLevel: Float = 0
     @State var isRecording: Bool = false
     @State var isPaused: Bool = false
     @State private var streamingText: String = ""
     @State private var appProvider: String = ""
-    
-    private var transcriptNotesGenerating: String = "Sending Your Notes To Your iPhone ..."
-    
-    @StateObject var audioManager = AudioTranscriptionManager.shared
 
-    
+    private var transcriptNotesGenerating: String = "Sending Your Notes To Your phone ..."
+
+    @StateObject var audioManager = AudioTranscriptionManager.shared
+    @ObservedObject var auth = AuthBackend.shared
+
+
     var body: some View {
         VStack {
             HStack(alignment: .top) {
@@ -33,18 +35,38 @@ struct ContentView: View {
                     ZStack {
                         Circle().frame(width: 25, height: 25)
                             .foregroundStyle(Color.clear).glassEffect(.clear)
-                        
+
                         Image(systemName: "xmark").opacity(0.8)
                     }
-                    
+
                 }.buttonStyle(.plain)
-                
+
+                Menu {
+                    if auth.isSignedIn {
+                        Button("Log Out") {
+                            Task {
+                                do {
+                                    try await auth.signOut()
+                                } catch {
+                                    print("task error", error)
+                                }
+                            }
+                        }
+                    } else {
+                        Button("Sign In") { auth.requestSignIn() }
+                    }
+            } label: {
+                Image(systemName: "ellipsis").font(.system(size: 18, design: .rounded)).fontWeight(.medium).opacity(0.5)
+            }.buttonStyle(.plain)
+                .padding(.top, 9)
+                .padding(.leading, 6)
+
                 Spacer(minLength: 200)
-                
+
                 if audioManager.isTranscribing {
                     HStack(spacing: 5) {
                         Text("Currently Transcribing:").fontWeight(.medium).opacity(0.8)
-                        
+
                         Text(DisplayProvider.displayProvider(appProvider: appProvider)).fontWeight(.regular)
                     }
                     .font(.system(size: 12, design: .rounded))
@@ -56,32 +78,39 @@ struct ContentView: View {
                     .fixedSize(horizontal: true, vertical: false)
                     .frame(maxWidth: .infinity, alignment: .trailing)
                     .padding(.trailing)
-                    
+
                 }
-                
+
             }.padding(.leading, 10)
                 .frame(maxWidth: .infinity)
                 .padding(.top)
-            
+
             Spacer(minLength: 2)
-            
+
             HStack {
                 VStack(alignment: .leading, spacing: 10) {
-                    
+
                     if audioManager.isSummarizing {
                         ShimmerText(text: transcriptNotesGenerating)
                     }
-                    
+
                     HStack {
-                        Text("Finished notes will appear in Rep on your\niPhone when you end this transcription.").font(.system(size: 14, design: .rounded)).fontWeight(.medium).opacity(0.5)
+                        Text(auth.isSignedIn
+                             ? "Finished notes will appear in Rep on your\nphone when you end this transcription."
+                             : "Sign in to transcribe and send notes\nto Rep on your phone.")
+                            .font(.system(size: 14, design: .rounded)).fontWeight(.medium).opacity(0.5)
                             .padding(.leading, 3)
-                        
+
                         Spacer()
                         Waveform(audioLevel: audioManager.audioLevels, isRecording: audioManager.isTranscribing, isPaused: isPaused)
                             .padding(.trailing, 3)
                     }
-                    
+
                     Button {
+                        guard auth.isSignedIn else {
+                            auth.requestSignIn()
+                            return
+                        }
                         audioManager.isTranscribing.toggle()
                         Task {
                             do {
@@ -115,11 +144,11 @@ struct ContentView: View {
                             ZStack {
                                 Capsule().frame(width: 150, height: 35)
                                     .foregroundStyle(Color.clear).glassEffect(.regular)
-                                
+
                                 HStack(alignment: .bottom) {
                                     Text("Stop transcription").font(.system(size: 12, design: .rounded)).fontWeight(.regular)
                                         .foregroundStyle(Color.kimchilabsReversed)
-                                    
+
                                     Image(systemName: "record.circle").foregroundStyle(Color.red)
                                 }
                             }
@@ -127,38 +156,38 @@ struct ContentView: View {
                             ZStack {
                                 Capsule().frame(width: 150, height: 35)
                                     .foregroundStyle(Color.kimchilabsReversed)
-                                
+
                                 HStack(alignment: .bottom) {
                                     Text(audioManager.isMoreCreditsNeeded ? "Upgrade Plan" : "Start Transcribing").font(.system(size: 12, design: .rounded)).fontWeight(.regular)
                                         .foregroundStyle(Color.kimchilabsBackground)
-                                    
+
                                     Image(systemName: "microphone").foregroundStyle(Color.kimchilabsBackground)
                                 }
                             }
                         }
                     }.buttonStyle(.plain)
-                        .disabled(audioManager.isTranscriptionButtonDisabled)
+                        .disabled(auth.isSignedIn && audioManager.isTranscriptionButtonDisabled)
                 }.padding(.leading)
                     .padding(.bottom)
                 Spacer()
             }
-            
+
         }.frame(width: 500, height: 180)
             .background(WindowConfigurator())
             .background(Material.ultraThickMaterial)
             .clipShape(RoundedRectangle(cornerRadius: 30, style: .continuous))
-        
+
             .task {
                 while !Task.isCancelled {
                     appProvider = NSWorkspace.shared.frontmostApplication?.bundleIdentifier ?? ""
                     print("bundle id passed: \(appProvider)")
-                    
+
                     try? await Task.sleep(for: .milliseconds(500))
                 }
             }
-        
+
             .task {
-                CreditsManager.shared.refreshUserCredits()
+                if auth.isSignedIn { CreditsManager.shared.refreshUserCredits() }
                 print("credits refreshed")
             }
     }

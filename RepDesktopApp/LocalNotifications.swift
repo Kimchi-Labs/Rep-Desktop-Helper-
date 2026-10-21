@@ -26,7 +26,7 @@ final class LocalNotificationsDelegate: NSObject, UNUserNotificationCenterDelega
     func notifyNotesSentToMobile() async throws {
         let content = UNMutableNotificationContent()
         content.title = "Notes sent to Rep"
-        content.body = "Open Rep on your iPhone to see your notes and start using LiveActivity flashcards"
+        content.body = "Open Rep on your mobile device to see your notes and start using LiveActivity flashcards"
         content.sound = .defaultCritical
         
         let request = UNNotificationRequest(identifier: "desktop-notes-sent-\(UUID().uuidString)", content: content, trigger: nil)

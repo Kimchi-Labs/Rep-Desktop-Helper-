@@ -10,6 +10,7 @@ import AuthenticationServices
 import CryptoKit
 import AppKit
 import Combine
+import SwiftData
 
 
 
@@ -44,7 +45,7 @@ struct Waveform: View {
 struct AuthView: View {
     @Environment(\.colorScheme) private var colorScheme
     @State private var currentNonce: String?
-    @StateObject private var auth = AuthBackend()
+    @ObservedObject var auth: AuthBackend
     
     var body: some View {
         
@@ -56,11 +57,15 @@ struct AuthView: View {
                     .glassEffect(.regular, in: .rect(cornerRadius: 30))
                 
                 VStack(alignment: .center, spacing: 5) {
+                    Button("Back") { auth.dismissSignIn() }
+                        .buttonStyle(.plain)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.leading, 24)
                     Text("Sign Into Rep Desktop").foregroundStyle(Color.kimchilabsReversed)
                         .fontDesign(.default)
                         .fontWeight(.medium)
                     
-                    Text("Capture meeting notes on your Mac\nand turn them appear on your iPhone as flashcards").font(.system(size: 12, design: .rounded)).fontWeight(.regular).opacity(0.5)
+                    Text("Capture meeting notes on your desktop\nand turn them into flashcards on your mobile device").font(.system(size: 12, design: .rounded)).fontWeight(.regular).opacity(0.5)
                         .multilineTextAlignment(.center)
                     
                     
@@ -139,6 +144,7 @@ struct MenuBarView: View {
     @Binding var isPaused: Bool
     
     @StateObject var audioManager = AudioTranscriptionManager.shared
+    @ObservedObject var auth = AuthBackend.shared
     
     @Environment(\.modelContext) private var context
     
@@ -205,6 +211,10 @@ struct MenuBarView: View {
                     }
                 } else {
                     coordinator.openDesktop()
+                    guard auth.isSignedIn else {
+                        auth.requestSignIn()
+                        return
+                    }
                     Task {
                         try await coordinator.transcribe()
                     }
@@ -244,7 +254,7 @@ struct MenuBarView: View {
                     }
                 }
             }.buttonStyle(.plain)
-                .disabled(audioManager.isTranscriptionButtonDisabled)
+                .disabled(auth.isSignedIn && audioManager.isTranscriptionButtonDisabled)
             
         }.frame(width: 250, height: 180)
             .transition(.opacity.combined(with: .scale(scale: 0.96)))
@@ -268,7 +278,7 @@ struct MenuBarView: View {
 }
 
 #Preview {
-    AuthView()
+    AuthView(auth: AuthBackend())
 }
 
 #Preview {
