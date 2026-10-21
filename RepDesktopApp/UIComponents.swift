@@ -11,7 +11,6 @@ import AuthenticationServices
 import CryptoKit
 import AppKit
 import Combine
-import SwiftData
 
 
 
