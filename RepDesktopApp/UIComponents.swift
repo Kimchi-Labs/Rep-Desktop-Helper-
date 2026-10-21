@@ -5,6 +5,7 @@
 //  Created by alex haidar on 7/4/26.
 //
 import SwiftUI
+import SwiftData
 import Foundation
 import AuthenticationServices
 import CryptoKit
